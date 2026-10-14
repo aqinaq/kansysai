@@ -30,7 +30,7 @@ There were three kinds of queries that the team implemented:
 - **Type 2 – Narrow terms or methods:** ASR in Kazakh, spoken task-oriented dialogue, intent detection, slot filling, action item extraction in meetings, and structured LLM output.
 - **Type 3 – Related terms and contradictions:** API argument filling, speech-NLP integration, and structured hallucinations.
 
-**Filtering strategy:** We filtered the supplied PDFs by the research problem, suggested method, results achieved, limitations, and possible application in our project. This is a **narrative review of literature** but not a systematic one. The selected materials represent research between 2021 and 2026. Some publications require further verification.
+**Filtering strategy:** We filtered the supplied PDFs by the research problem, suggested method, results achieved, limitations, and possible application in our project. This is a narrative review of literature but not a systematic one. The selected materials represent research between 2021 and 2026. Some publications require further verification.
 
 ## 4. Type 1 – Broad searches: AI and task-management systems
 
@@ -134,3 +134,67 @@ There were three kinds of queries that the team implemented:
 - **Reported Findings**: For this particular test, LLM-mediated output formatting resulted in corruption of the structured task fields; avoiding the unnecessary re-synthesis process allowed tool values to persist.
 - **Relevance**: Useful caution that a valid JSON object does **not** ensure correct task field values. Preserve the transcript, validate the output, and have users confirm fields in question.
 - **Limitation**: Only one deployment and tested model; concerned with *reformatting structured tool outputs*, rather than extracting the information from an audio message. Errors are not generalizable to our use case.
+
+## 7. Comparison of all 12 sources
+
+| No. | Search type | Publication (year) | Main approach | Main value for our project | Main applicability limit |
+|---|---|---|---|---|---|
+| 1 | Broad | Lekkala & Bandari (2026) | Multi-agent workflow optimization | WIP and task-handoff concepts | Operations, not voice-to-task |
+| 2 | Broad | Adebanjo et al. (2026) | NLP-enabled TaskWise platform | Comparable task-management product | Small evaluation; limited collaboration |
+| 3 | Broad | Chen et al. (2021) | NLP and contract keyword detection | Domain-focused information extraction | Construction documents |
+| 4 | Narrow | Weld et al. (2022) | Survey of intent and slot models | Intent and task-field design | Not a task-generation experiment |
+| 5 | Narrow | Kozhirbayev (2023) | Kazakh ASR model comparison | Candidate ASR models and WER/CER | Domain and recording conditions vary |
+| 6 | Narrow | Si et al. (2023) | SpokenWOZ benchmark | Realistic speech evaluation cases | Different domains/languages |
+| 7 | Narrow | Tanaka & Thompson (2025) | Action-item extraction review | Multiple tasks and indirect commitments | Review, not a Kanban implementation |
+| 8 | Narrow | Sun et al. (2024) | LLM slot filling under noisy ASR | Robust extraction from transcripts | Different dataset/models |
+| 9 | Narrow | Li et al. (2024) | Generate and Organize (G&O) | Structured output strategy | Tested on NER/RE |
+| 10 | Adjacent | Mok et al. (2024) | Grounded API argument filling | Faithfulness to schema and user text | Not Kanban-specific |
+| 11 | Adjacent | Pal (2023) | ASR/NLP technology overview | End-to-end speech and language context | Broad review, verify claims |
+| 12 | Adjacent | Hoang (2026) | Structured hallucination benchmark | Field fidelity and validation risks | Travel-data synthesis, not STT |
+
+## 8. Synthesis: implications for our proposed solution
+
+**8.1 A modular pipeline is appropriate.** The collected sources discuss speech recognition, spoken-language understanding, task/action-item extraction, and reliable structured output as separable problems. 
+Our *proposed architecture* is:
+
+`Voice message → ASR transcription → task/intent extraction → schema validation → user review → backend storage → Kanban card`
+
+**8.2 Model selection is empirical.** The Kazakh ASR comparison inspires testing at minimum Whisper and an adequate wav2vec2 variant as a baseline, if the effort is doable. One should not make universal claims about model superiority on the basis of one particular dataset.
+
+**8.3 Task extraction needs independent evaluation from transcription.** The intent/slot-filling and spoken-dialogue papers reveal that even a good transcript may cause wrong entities or actions to be extracted. Both need to be assessed.
+
+**8.4 JSON syntax is not enough.** From the structured extraction, API argument filling, and hallucination papers follows the requirement for two complementary checks: (a) **schema validity** (types, required fields, valid statuses), and (b) **semantic correctness** with respect to the transcript. Schema checking needs to be done explicitly before storing data.
+
+**8.5 Let's keep the MVP small.** While multi-agent workflow optimization is an interesting problem, it is not necessary for showing that voice-to-task creation works. A basic backend for ASR, task extraction, and validation is easier to argue and test.
+
+## 9. Proposed evaluation plan 
+
+| Component | Proposed measurement | Example of what to check |
+|---|---|---|
+| ASR | Word Error Rate (WER); optionally CER | Kazakh and Russian recordings; background noise |
+| Intent | Precision, recall, F1 | Correctly distinguish task requests from ordinary speech |
+| Task extraction | Field-level precision/recall/F1 or exact match | Title, deadline, assignee, description |
+| Structured output | Schema-valid response rate | Correct data types, required fields, date formats |
+| Faithfulness | Unsupported-value / fabricated-field rate | Did AI invent a deadline not spoken by the user? |
+| End-to-end | Correct-task creation rate; user correction rate; latency | Can the user confirm and save the intended Kanban card? |
+
+We should use a small labeled set of representative voice messages. For example: single-task commands, multiple tasks in one message, unclear dates, missing assignees, Kazakh/Russian messages, and messages containing no actionable task. Final metrics and thresholds require agreement with the team and supervisor.
+
+## 10. Conclusion
+
+The twelve collected publications cover complementary parts of the intelligent Kanban problem. Task-management studies establish product relevance; Kazakh ASR and spoken-dialogue studies highlight language and audio challenges; intent detection, slot filling, and structured extraction studies inform the AI pipeline; and API-grounding and hallucination studies identify reliability risks. Collectively, they **motivate**, but do not directly validate, our planned voice-to-Kanban workflow. The next step is to select candidate tools, build a baseline implementation, and measure its performance on representative user utterances before choosing a final technology stack.
+
+## 11. References (from the supplied PDFs)
+
+1. Lekkala, H. B., & Bandari, V. (2026). *Autonomous Workflow Optimization Using Multi Agent AI Systems: AI Agents Manage Stations, WIP, and Task Handoffs*. DOI printed in PDF: 10.46121/pspc.54.2.08. **Verify bibliographic metadata and venue.**
+2. Adebanjo, O. A., Oluwasegun, A., Isaac, A., Oluwaseyi, A. J., & Emmanuel, A. (2026). *Design and Implementation of an AI-Powered Task Management System (TaskWise).* British Journal of Computer, Networking and Information Technology, 9(2), 20–34. https://doi.org/10.52589/BJCNIT-LA6S3NNL
+3. Chen, J.-H., Su, M.-C., Azzizi, V.-T., Wang, T.-K., & Lin, W.-J. (2021). *Smart Project Management: Interactive Platform Using Natural Language Processing Technology.* Applied Sciences, 11, 1597. https://doi.org/10.3390/app11041597
+4. Weld, H., Huang, X., Long, S., Poon, J., & Han, S. C. (2022). *A Survey of Joint Intent Detection and Slot Filling Models in Natural Language Understanding.* ACM Computing Surveys, 55(8), Article 156. https://doi.org/10.1145/3547138
+5. Kozhirbayev, Z. (2023). *Kazakh Speech Recognition: Wav2vec2.0 vs. Whisper.* Journal of Advances in Information Technology, 14(6). **Confirm page range/complete DOI in PDF before submission.**
+6. Si, S., Ma, W., Gao, H., Wu, Y., Lin, T.-E., Dai, Y., Li, H., Yan, R., Huang, F., & Li, Y. (2023). *SpokenWOZ: A Large-Scale Speech-Text Benchmark for Spoken Task-Oriented Dialogue Agents.* NeurIPS 2023, Datasets and Benchmarks. https://spokenwoz.github.io/SpokenWOZ-github.io/
+7. Tanaka, H., & Thompson, G. (2025). *Multi-Agent Systems for Action Item Extraction from Meeting Transcripts: A Comprehensive Review.* Scientific Research Journal of Science, Engineering and Technology, 3(2). **Verify venue, pagination, and peer-review status.**
+8. Sun, G., Feng, S., Jiang, D., Zhang, C., Gašić, M., & Woodland, P. C. (2024). *Speech-based Slot Filling using Large Language Models.* Findings of ACL 2024, 6351–6362. https://aclanthology.org/2024.findings-acl.379/
+9. Li, Y., Ramprasad, R., & Zhang, C. (2024). *A Simple but Effective Approach to Improve Structured Language Model Output for Information Extraction.* Findings of EMNLP 2024, 5133–5148. **Verify ACL Anthology identifier before submission.**
+10. Mok, J., Kachuee, M., Dai, S., Ray, S., Taghavi, T., & Yoon, S. (2024). *LLM-based Frameworks for API Argument Filling in Task-Oriented Conversational Systems.* NAACL 2024 Industry Track, 419–426. https://aclanthology.org/2024.naacl-industry.36/
+11. Pal, M. (2023). *Natural Language Processing and Speech Recognition.* Excel International Journal of Technology, Engineering and Management, 10(1), 32–38. **Verify journal metadata and peer-review status.**
+12. Hoang, T. (2026). *Structured Hallucination in Tool-Using Agents: Measuring and Mitigating LLM Synthesis Corruption in Production.* Second Workshop on Agents in the Wild (AIWILD) at ICML 2026. **Verify final proceedings URL.**
