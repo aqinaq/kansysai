@@ -41,7 +41,7 @@ A complete application is not available yet. The technology choices will be docu
 
 - [Project proposal](docs/project-proposal.md)
 - [Literature review](docs/research/literature-review.md)
-- [YouTrack project](https://akiboupie.youtrack.cloud/projects/DEMO)
+- [YouTrack project](https://ai-kanban-thesis.youtrack.cloud/projects/DEMO)
 
 ## Development workflow
 
