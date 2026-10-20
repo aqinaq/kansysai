@@ -1,0 +1,448 @@
+% BE-03: Technology Selection — compile with XeLaTeX (Overleaf: Menu → Compiler → XeLaTeX)
+\documentclass[11pt,a4paper]{article}
+
+% ---------- language and fonts ----------
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{english}
+% fonts with Cyrillic glyphs, needed for the Kazakh/Russian command examples
+\IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}}{%
+  \IfFontExistsTF{Liberation Serif}{\setmainfont{Liberation Serif}}{\setmainfont{DejaVu Serif}}}
+\IfFontExistsTF{Arial}{\setsansfont{Arial}}{%
+  \IfFontExistsTF{Liberation Sans}{\setsansfont{Liberation Sans}}{\setsansfont{DejaVu Sans}}}
+\IfFontExistsTF{Consolas}{\setmonofont[Scale=0.9]{Consolas}}{\setmonofont[Scale=0.85]{DejaVu Sans Mono}}
+
+% ---------- layout ----------
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{microtype}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{xltabular}
+\usepackage{enumitem}
+\usepackage[table]{xcolor}
+\usepackage{caption}
+\usepackage{fancyvrb}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,fit,backgrounds}
+\usepackage{xurl}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+
+\setlist{itemsep=2pt,topsep=4pt}
+\setlength{\parskip}{4pt}
+\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{3em}
+\renewcommand{\arraystretch}{1.25}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\tblstart}{\small\rowcolors{2}{gray!7}{white}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{\textbf{BE-03: Technology Selection}\\[4pt]
+\large Intelligent Kanban System with an AI Assistant\\ for Managing Tasks by Voice and Text}
+\author{Symbat Saparbay\\ \small YouTrack: DEMO-22}
+\date{Version 3 · 20 October 2026}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\begin{minipage}{0.9\textwidth}
+\small
+\textbf{Changes since version 2:} added the frontend, intent recognition for eight AI actions, access control, notifications, voice-message storage and protection, and audit logging. The local-versus-cloud decision was revisited from a real-product perspective: speed, scalability and Kazakh language quality.
+\end{minipage}
+\end{center}
+
+\tableofcontents
+\newpage
+
+% =====================================================
+\section{Goal}
+
+Select and justify the technologies for a \textbf{commercial Kanban product} used by company employees, project managers, teachers and students. The AI assistant is built into the workflow: the user speaks or types a command, the system understands it, shows the proposed action and performs it on the board after confirmation.
+
+% =====================================================
+\section{Requirements Driving the Choice}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{0.9cm} P{6.4cm} L}
+\toprule
+\textbf{ID} & \textbf{Requirement} & \textbf{Impact on the stack} \\
+\midrule
+\endhead
+R1 & Kazakh, Russian and English, including mixed speech (Kazakh + Russian + English technical terms) & STT and LLM quality on Kazakh is the main criterion \\
+R2 & Eight AI actions: Create Task, Update Task, Change Status, Assign User, Change Deadline, Change Priority, Search Tasks, Project Summary & LLM with reliable structured output / tool calling \\
+R3 & AI never changes data without confirmation or when a command is ambiguous; never invents assignees, deadlines or tasks & Deterministic validation in the backend; the AI only proposes \\
+R4 & Complete product: authentication, workspaces, projects, members, tasks, comments, history, notifications & Relational database, RBAC, real-time updates \\
+R5 & Response to a voice command within a few seconds & Fast STT, asynchronous processing \\
+R6 & Protection of user data and voice recordings & Encryption, limited retention, access control \\
+R7 & Scalability and room for growth & Stateless API, separate AI worker, models swappable by configuration \\
+R8 & Reliability: AI errors, API outages, repeated requests & Fallback providers, idempotency, queues \\
+R9 & Visible development trail (GitLab, YouTrack) & GitLab CI, tests, history \\
+\bottomrule
+\end{xltabular}}
+
+% =====================================================
+\section{Architecture}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  scale=0.92, transform shape,
+  font=\small,
+  box/.style={draw, rounded corners=3pt, fill=white, align=center, minimum height=1cm, text width=3.5cm},
+  db/.style={draw, rounded corners=9pt, fill=gray!12, align=center, minimum height=1cm, text width=2.5cm},
+  grp/.style={draw=gray!60, dashed, rounded corners=6pt, inner sep=8pt},
+  lbl/.style={font=\footnotesize\bfseries, text=gray!70!black},
+  arr/.style={-{Stealth[length=2mm]}, thick},
+  tag/.style={font=\footnotesize, fill=white, inner sep=1.5pt}
+]
+% frontend
+\node[box] (ui)   at (0,0)    {Kanban UI (React)};
+\node[box] (mic)  at (0,-1.7) {Voice recording\\MediaRecorder};
+\node[box] (conf) at (0,-3.4) {Confirmation dialog\\for AI actions};
+% backend
+\node[box] (api)   at (5.7,0)    {REST API + WebSocket};
+\node[box] (cmd)   at (5.7,-1.7) {AI Command Service\\validation, resolution};
+\node[box] (dom)   at (5.7,-3.4) {Domain services\\Auth/RBAC, tasks};
+\node[box] (notif) at (5.7,-5.1) {Notifications};
+% worker
+\node[box] (stt) at (11.4,0)    {Speech-to-Text\\Whisper kk/ru/en};
+\node[box] (llm) at (11.4,-1.7) {LLM: intent\\+ entities};
+% storage
+\node[db] (s3)    at (0,-7)     {MinIO / S3\\voice files};
+\node[db] (pg)    at (8.55,-7)  {PostgreSQL};
+\node[db] (redis) at (11.4,-4.6) {Redis\\queues, pub/sub};
+
+\begin{scope}[on background layer]
+\node[grp, fill=blue!4,   fit=(ui)(mic)(conf),        label={[lbl]above:Frontend}] {};
+\node[grp, fill=green!5,  fit=(api)(cmd)(dom)(notif), label={[lbl]above:Backend (FastAPI)}] {};
+\node[grp, fill=orange!7, fit=(stt)(llm),             label={[lbl]above:AI worker}] {};
+\end{scope}
+
+% arrows
+\draw[arr, <->] (ui) -- node[tag, above=2pt, align=center]{HTTPS\\WSS} (api);
+\draw[arr] (api) -- (cmd);
+\draw[arr] (conf.east) -- node[tag, sloped, below=1pt, pos=0.4]{confirmation} (cmd.west);
+\draw[arr, <->] (cmd) -- node[tag, above=2pt, align=center]{command\\plan} (llm);
+\draw[arr] (stt) -- (llm);
+\draw[arr, <->] (llm) -- node[tag, right=2pt]{queue} (redis);
+\draw[arr] (cmd) -- node[tag, right=2pt]{after confirm} (dom);
+\draw[arr] (dom) -- (notif);
+\draw[arr] (dom.east) -| (pg.north);
+\draw[arr] (notif.west) -| node[tag, pos=0.25, below=1pt]{events} (conf.south);
+\draw[arr] (mic.west) -- ++(-0.5,0) |- node[tag, pos=0.25, left=1pt]{audio} (s3.west);
+\end{tikzpicture}
+\caption{Component architecture. The AI worker reads audio from MinIO and returns an action plan; only the backend changes data, and only after confirmation.}
+\end{figure}
+
+\subsection{AI Pipeline}
+
+\begin{center}
+\small
+Voice Input $\rightarrow$ Speech-to-Text $\rightarrow$ Intent Recognition $\rightarrow$ Entity Extraction $\rightarrow$\\
+Validation \& Resolution $\rightarrow$ User Confirmation $\rightarrow$ Backend Action $\rightarrow$ Kanban Update
+\end{center}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{3.4cm} P{2.6cm} L}
+\toprule
+\textbf{Step} & \textbf{Where} & \textbf{Technology} \\
+\midrule
+\endhead
+Voice Input & Browser & MediaRecorder API (WebM/Opus), uploaded to MinIO via the backend \\
+Speech-to-Text & AI worker & Whisper large-v3-turbo + Whisper fine-tuned on Kazakh (Section~\ref{sec:stt}) \\
+Intent Recognition + Entity Extraction & AI worker & LLM with tool calling: one call returns a list of actions with parameters (Section~\ref{sec:llm}) \\
+Validation \& Resolution & Backend, no LLM & Pydantic schemas, assignee lookup among project members, task search (pg\_trgm), date and permission checks \\
+User Confirmation & Frontend & Preview cards with missing and ambiguous fields highlighted; transcript and fields can be edited \\
+Backend Action & Backend & The same domain services as manual UI actions (shared permission checks and audit) \\
+Kanban Update & Frontend & WebSocket event; the board updates for all members \\
+\bottomrule
+\end{xltabular}}
+
+\textbf{Key principle.} The LLM only \emph{understands the command and proposes} an action. Everything that changes data is ordinary backend code that runs after the user confirms, with the same permission checks as manual actions. As a result, the AI cannot change someone else's task or create a task without confirmation.
+
+% =====================================================
+\section{Speech-to-Text}\label{sec:stt}
+
+\subsection{Comparison}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{2.7cm} L L L L}
+\toprule
+\textbf{Criterion} & \textbf{Whisper large-v3-turbo (self-hosted)} & \textbf{Whisper fine-tuned on KSC2 (self-hosted)} & \textbf{ElevenLabs Scribe (cloud)} & \textbf{OpenAI gpt-4o-transcribe (cloud)} \\
+\midrule
+\endhead
+Kazakh & Weak: confuses it with Turkish; WER $\approx$77\% in a published study & \textbf{Good: WER $\approx$15--18\%} on the KSC2 test set & Good (vendor-reported WER 3.1\% on FLEURS) & Moderate to good \\
+Russian / English & \textbf{Excellent} & Worse than the base model & Excellent & Excellent \\
+Mixed speech & Automatic detection & Partial & Automatic detection & Automatic detection \\
+Speed & $\approx$1--2 s per 10 s of audio (GPU) & Similar & 1--3 s + network & 1--3 s + network \\
+Cost & Hardware only & Hardware only & $\approx$\$0.22 / hour & \$0.006 / min \\
+Privacy & \textbf{Voice stays on our server} & \textbf{Voice stays on our server} & Data sent to the vendor & Data sent to the vendor \\
+Scaling & GPU workers & GPU workers & Managed & Managed \\
+\bottomrule
+\end{xltabular}}
+
+\subsection{Decision: Self-Hosted STT with Language Routing and a Cloud Fallback}
+
+\begin{enumerate}
+  \item \textbf{Automatic language detection.} Whisper large-v3-turbo (\code{faster-whisper}) computes language probabilities, which are restricted to Kazakh, Russian and English and renormalised.
+  \item \textbf{Routing without a hint.} The Kazakh model is used if Kazakh is the most likely language \emph{or} $p(\mathrm{kk}) \ge 0.30$. The threshold handles mixed speech: a Kazakh sentence with Russian and English terms is often detected as Russian, but with a noticeable Kazakh share. Otherwise, Russian and English speech is transcribed by Whisper large-v3-turbo with the detected language.
+  \item \textbf{Language selected by the user.} If the user selects a language in the UI, detection is skipped: Kazakh goes to the Kazakh model, Russian and English to Whisper large-v3-turbo. For mixed speech, the UI suggests Kazakh.
+  \item The user can \textbf{correct the transcript} before it is processed.
+  \item \textbf{Fallback:} if the local STT is unavailable or overloaded, a cloud provider is used (enabled in the workspace settings).
+\end{enumerate}
+
+The 0.30 threshold is a starting value; it is a parameter tuned with the benchmark. The benchmark (\code{benchmarks/stt\_benchmark.py}) evaluates multilingual models separately in two modes: \textbf{auto} (automatic language detection, the main product scenario) and \textbf{hint} (language selected by the user). For auto mode it also reports language-detection accuracy and how mixed recordings are routed. The final Kazakh model is chosen from the benchmark results.
+
+\textbf{Rationale.} Voice is the most sensitive data in the system. Self-hosted STT addresses privacy and keeps costs flat as the number of users grows, while the fine-tuned model compensates for Whisper's weakness in Kazakh. The cloud fallback improves reliability (R8).
+
+% =====================================================
+\section{LLM for Command Understanding}\label{sec:llm}
+
+\subsection{What the Model Must Do}
+
+From a single utterance, often with recognition errors and mixed languages, the model must produce an \textbf{action plan} that strictly follows a schema. Example for the command \textit{«Создай задачу для Данияра: подготовить презентацию проекта до пятницы, высокий приоритет»} (“Create a task for Daniyar: prepare the project presentation by Friday, high priority”):
+
+\begin{Verbatim}[fontsize=\small,frame=single,framesep=6pt,rulecolor=\color{gray!50}]
+{
+  "actions": [
+    {
+      "type": "create_task",
+      "params": {
+        "title": "Подготовить презентацию проекта",
+        "assignee_mention": "Данияр",
+        "deadline": "2026-10-23",
+        "deadline_phrase": "до пятницы",
+        "priority": "high"
+      },
+      "missing": [],
+      "confidence": 0.92
+    }
+  ],
+  "clarification_needed": null
+}
+\end{Verbatim}
+
+Requirements: tool calling or JSON Schema, understanding of Kazakh, Russian and English, several assignments in one utterance, Kazakh case forms of names («Даниярға» $\rightarrow$ «Данияр»), and relative dates. Task titles are kept in the original language.
+
+\subsection{Comparison}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{3.2cm} L L}
+\toprule
+\textbf{Criterion} & \textbf{Local 7--8B LLM (Qwen 3 / ISSAI KazLLM via Ollama)} & \textbf{Cloud Flash/mini-class LLM (Gemini Flash, OpenAI mini)} \\
+\midrule
+\endhead
+Kazakh & Qwen: moderate; KazLLM: good, but weaker at tool calling & Good \\
+Tool calling, several actions in one utterance & Unstable at 7--8B, especially in Kazakh & \textbf{Reliable} \\
+Speed & 3--15 s without a powerful GPU & \textbf{1--3 s} \\
+Cost & Hardware only & Estimate: $\approx$1.5k input + 300 output tokens per command $\approx$ \textbf{\$0.005 per command} \\
+Scaling & Requires more GPUs & Managed \\
+Privacy & Full & Only the command text and project member names are sent; no audio and no task contents \\
+\bottomrule
+\end{xltabular}}
+
+\subsection{Decision: Hybrid Behind a Single \code{CommandParser} Interface}
+
+\begin{itemize}
+  \item \textbf{Default mode: a cloud Flash/mini-class LLM} with tool calling. For a real product, the deciding factors are reliable parsing of complex Kazakh commands, response time (the user is waiting for the card preview) and scaling without buying GPUs.
+  \item \textbf{Private (on-premise) mode: a local LLM via Ollama} (Qwen 3 or KazLLM 8B). Enabled by configuration for organisations that cannot send text to external services; also used as a fallback when the cloud API is unavailable.
+  \item Both providers implement the same interface and JSON schema. The specific model is chosen by testing on our 30+ scenarios: intent accuracy, field accuracy, rate of invented values and response time.
+\end{itemize}
+
+\textbf{Why the version 2 decision (fully local) was changed.} Without a powerful GPU, a local 7--8B model responds too slowly and parses several actions in one Kazakh utterance unreliably. This conflicts with the speed and AI-integration-quality criteria. Voice is still processed only on our server, and the local LLM mode remains available as an option.
+
+\subsection{Protection Against Invented Data}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{4cm} L}
+\toprule
+\textbf{Risk} & \textbf{Mechanism} \\
+\midrule
+\endhead
+Invented assignee & The LLM returns only a mention (\code{assignee\_mention}). The backend looks it up among project members, normalising Kazakh case endings, handling transliteration and using fuzzy matching. If there is no match or several matches, the field is flagged and the user picks from a list \\
+Invented deadline & The LLM returns both the date and the source phrase (\code{deadline\_phrase}). If the phrase is not in the transcript, the date is discarded. The backend checks that the date is not in the past, using the user's time zone \\
+Wrong task when updating & The LLM returns a description of the task. The backend searches for candidates (pg\_trgm on titles in accessible projects): none means ``not found'', more than one means a clarification question \\
+Invented tasks in answers (Search, Summary) & The backend runs the query on real data. The LLM only builds the filter (status, assignee, deadline); the answer contains real rows from the database \\
+Action without confirmation & Changes are applied only via \code{POST /ai-commands/\{id\}/confirm} \\
+\bottomrule
+\end{xltabular}}
+
+% =====================================================
+\section{Frontend}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{3.6cm} L L L}
+\toprule
+\textbf{Criterion} & \textbf{React + TypeScript (Vite)} & \textbf{Vue 3} & \textbf{Angular} \\
+\midrule
+\endhead
+Kanban drag-and-drop & dnd-kit, many ready-made components & vuedraggable & CDK Drag\&Drop \\
+Server state and real time & TanStack Query + WebSocket & Pinia + composables & RxJS \\
+Shared types with the backend & Types generated from OpenAPI & Same & Same \\
+Learning curve and adoption & Most widely used & Easy & Steep \\
+\bottomrule
+\end{xltabular}}
+
+\textbf{Decision: React + TypeScript + Vite.} Tailwind CSS and shadcn/ui for components, dnd-kit for dragging cards, TanStack Query for data fetching, an API client generated from the FastAPI OpenAPI specification (shared types between frontend and backend), and react-i18next for Kazakh, Russian and English. Voice is recorded with the browser MediaRecorder API, so no separate mobile app is needed.
+
+% =====================================================
+\section{Backend}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{3.6cm} L L L}
+\toprule
+\textbf{Criterion} & \textbf{FastAPI} & \textbf{Django + DRF} & \textbf{Flask} \\
+\midrule
+\endhead
+Async (AI calls, WebSocket) & Native & Partial & Via extensions \\
+Validation & Pydantic: the same schemas for AI actions, API and validation & Serializers & Manual \\
+OpenAPI specification & Automatic & Via add-ons & Via add-ons \\
+WebSocket & Built in & Django Channels & Via extensions \\
+\bottomrule
+\end{xltabular}}
+
+\textbf{Decision: Python 3.12 + FastAPI}, SQLAlchemy 2.0 (async) and Alembic. Modules are organised by domain: \code{auth}, \code{workspaces}, \code{projects}, \code{tasks}, \code{comments}, \code{notifications}, \code{ai\_commands}, \code{audit}.
+
+The \textbf{AI worker} is a separate process (ARQ or Celery + Redis). STT models are loaded into memory once, the API is never blocked, and workers scale independently.
+
+% =====================================================
+\section{Database and Storage}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{4.4cm} L L}
+\toprule
+\textbf{Criterion} & \textbf{PostgreSQL} & \textbf{MongoDB} \\
+\midrule
+\endhead
+Data model (workspace $\rightarrow$ project $\rightarrow$ board $\rightarrow$ column $\rightarrow$ task, members, roles) & Relational, foreign keys, transactions & Relations handled manually \\
+Access control and integrity & Constraints at database level & In application code \\
+Finding a task from a spoken description & pg\_trgm; pgvector if needed & Atlas Search \\
+Flexible AI data (transcript, plan) & JSONB & Native \\
+Audit and history & Append-only table & Collection \\
+\bottomrule
+\end{xltabular}}
+
+\textbf{Decision:}
+\begin{itemize}
+  \item \textbf{PostgreSQL 16}: main database (pg\_trgm, optionally pgvector).
+  \item \textbf{Redis}: AI job queue, pub/sub for WebSocket across API instances, rate limiting, idempotency keys.
+  \item \textbf{MinIO} (S3-compatible storage): voice messages; replaced by S3 in the cloud without code changes.
+\end{itemize}
+
+Key entities (detailed in the Database Schema): \code{users}, \code{workspaces}, \code{workspace\_members}, \code{projects}, \code{project\_members}, \code{boards}, \code{columns}, \code{tasks}, \code{task\_comments}, \code{task\_history}, \code{notifications}, \code{voice\_messages}, \code{ai\_commands}, \code{audit\_log}.
+
+% =====================================================
+\section{Security and Data Protection}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{4cm} L}
+\toprule
+\textbf{Requirement} & \textbf{Solution} \\
+\midrule
+\endhead
+Authentication & JWT: short-lived access token and refresh token in an httpOnly cookie; passwords hashed with Argon2 \\
+Access control & RBAC: workspace roles (owner, admin, member) and project roles (manager, member, viewer); checked in every service, including AI actions \\
+Voice messages & Private bucket, encryption at rest, access via short-lived presigned URLs, automatic deletion after 30 days (configurable); the transcript is kept in history \\
+Data sent to the cloud LLM & Only the command text and project member names; no audio, email addresses or contents of other tasks. On-premise deployments use the local LLM \\
+Duplicate task creation & AI command status \code{pending} $\rightarrow$ \code{confirmed} $\rightarrow$ \code{executed}; confirmation is idempotent, so a repeated click creates nothing; warning about a similar recently created task \\
+AI unavailability & Timeouts and retries, switch to the fallback provider, a clear message to the user; manual task creation always works \\
+Action history & \code{task\_history} (what, who, when, via UI or AI) and \code{audit\_log} \\
+Transport & HTTPS/WSS, CORS, rate limiting on AI endpoints \\
+\bottomrule
+\end{xltabular}}
+
+% =====================================================
+\section{Notifications}
+
+\begin{itemize}
+  \item \textbf{Real-time in-app:} WebSocket for assignments, status changes, comments and mentions.
+  \item \textbf{Email:} SMTP (Mailpit during development) for assignments and upcoming deadlines.
+  \item \textbf{Deadline reminders:} a periodic job (ARQ cron or Celery beat) runs every 15 minutes and finds tasks due within 24 hours and overdue tasks.
+  \item Users choose which notifications they receive.
+\end{itemize}
+
+% =====================================================
+\section{Final Stack}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{3.2cm} P{6.6cm} L}
+\toprule
+\textbf{Layer} & \textbf{Technology} & \textbf{Key reason} \\
+\midrule
+\endhead
+Languages & Kazakh, Russian, English, mixed speech & Product requirement \\
+Frontend & React + TypeScript + Vite, Tailwind + shadcn/ui, dnd-kit, TanStack Query, react-i18next & Mature Kanban ecosystem, types from OpenAPI \\
+Voice recording & MediaRecorder API (browser) & No separate app needed \\
+Backend & Python 3.12 + FastAPI, SQLAlchemy 2.0, Alembic & Async, Pydantic, automatic OpenAPI \\
+AI worker & ARQ / Celery + Redis & Does not block the API, scales independently \\
+Speech-to-Text & Self-hosted: Whisper large-v3-turbo (Russian/English, language detection) + Whisper fine-tuned on KSC2 (Kazakh); optional cloud fallback & Voice stays on our server; Kazakh quality \\
+LLM & Cloud Flash/mini-class LLM with tool calling; local Qwen 3 / KazLLM (Ollama) for on-premise mode and fallback & Speed and reliability; private mode preserved \\
+Database & PostgreSQL 16 + pg\_trgm (+ pgvector) & Relational model, task search, JSONB \\
+Cache, queues, pub/sub & Redis & AI queues, WebSocket across instances, idempotency \\
+Voice files & MinIO (S3), encryption, 30-day retention & Privacy, portable to the cloud \\
+API & REST (OpenAPI) + WebSocket & CRUD and a real-time board \\
+Auth & JWT + refresh, Argon2, RBAC & Workspace and project permissions \\
+Notifications & WebSocket + email, periodic reminders & Changes and deadlines \\
+Infrastructure & Docker Compose (frontend, api, worker, postgres, redis, minio, ollama) & One-command startup \\
+Testing & pytest, httpx, Playwright (e2e), AI evaluation set (30+ scenarios), jiwer (WER) & Tests both the AI and system operations \\
+CI and process & GitLab CI (linters, tests, build), YouTrack & Development trail \\
+\bottomrule
+\end{xltabular}}
+
+% =====================================================
+\section{Validating the Choice}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{3.6cm} L P{4.6cm}}
+\toprule
+\textbf{What is checked} & \textbf{Metric} & \textbf{Data set} \\
+\midrule
+\endhead
+STT & WER / CER per language, separately for auto and hint modes; latency & 20+ recordings (kk/ru/en/mixed), \code{stt\_benchmark.py} \\
+Language detection & Kazakh/Russian/English detection accuracy (auto mode); routing of mixed recordings & Same recordings \\
+Intent recognition & Accuracy over the eight actions and a ``not a command'' class & 30+ scenarios from the Test Cases \\
+Field extraction & Per-field accuracy (title, assignee, deadline, priority) & Same scenarios \\
+Invented data & Share of values not present in the transcript & Same scenarios \\
+Speed & Time from end of recording to preview (target: under 5 s) & Same scenarios \\
+LLM comparison & Cloud and local models on the same set & Confirms Section~\ref{sec:llm} \\
+\bottomrule
+\end{xltabular}}
+
+Results are stored in \code{benchmarks/results/} and summarised in this document.
+
+% =====================================================
+\section{Risks}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{5.4cm} L}
+\toprule
+\textbf{Risk} & \textbf{Mitigation} \\
+\midrule
+\endhead
+Low STT accuracy on mixed speech & Manual language selection; transcript can be edited before processing \\
+Cloud LLM unavailable & Fallback to the local model; manual task management always works \\
+Wrong assignee or task match & Deterministic lookup and confirmation; clarification when several matches are found \\
+No GPU for self-hosted STT & Smaller models and int8 on CPU; cloud STT fallback \\
+Voice data leak & Private storage, encryption, retention limit, presigned URL access \\
+\bottomrule
+\end{xltabular}}
+
+% =====================================================
+\section{References}
+
+\begin{enumerate}[label={[\arabic*]}, leftmargin=*]
+  \item Study of STT/TTS for the Kazakh language (Whisper, GPT-4 Transcribe, ElevenLabs, Soyle). \url{https://api.crossref.org/works/10.3390%2FINFO16100879}
+  \item Whisper fine-tuned on KSC2: \url{https://huggingface.co/akuzdeuov/whisper-base.kk}, \url{https://huggingface.co/abilmansplus/whisper-turbo-ksc2}
+  \item Whisper large-v3 for Kazakh (tulpar). \url{https://huggingface.co/olzhasAl/whisper-large-v3-tulpar}
+  \item faster-whisper large-v3-turbo. \url{https://huggingface.co/deepdml/faster-whisper-large-v3-turbo-ct2}
+  \item ISSAI Soyle. \url{https://github.com/IS2AI/Soyle}
+  \item ISSAI KAZ-LLM. \url{https://issai.nu.edu.kz/kazllm/}
+  \item ElevenLabs Scribe for Kazakh. \url{https://elevenlabs.io/speech-to-text/kazakh}
+  \item ElevenLabs API pricing. \url{https://developer.puter.com/tutorials/elevenlabs-api-pricing/}
+  \item OpenAI API pricing. \url{https://developers.openai.com/api/docs/pricing}
+  \item Gemini Flash: structured output, tool calling, pricing. \url{https://docs.apiyi.com/en/api-capabilities/gemini-3-6-flash/overview.md}
+\end{enumerate}
+
+\end{document}

@@ -1,0 +1,6 @@
+faster-whisper
+transformers
+torch
+librosa
+jiwer
+pytest
