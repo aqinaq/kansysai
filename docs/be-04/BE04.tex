@@ -44,18 +44,16 @@
 
 \title{\textbf{BE-04: System Context Diagram}\\[4pt]
 \large Intelligent Kanban System with an AI Assistant}
-\author{Symbat Saparbay\\ \small YouTrack: DEMO-23}
-\date{20 October 2026}
+\author{Symbat Saparbay | Akbope Bakytkeldy\\ \small YouTrack: DEMO-23}
+\date{}
 
 \begin{document}
 \maketitle
-
 % =====================================================
 \section{Purpose}
 
-The context diagram (level 1 of the C4 model) shows the system as a single whole: \textbf{who} uses it, \textbf{which external systems} it interacts with, and \textbf{what data} crosses its boundary. The internal structure (frontend, backend, AI worker, databases) is described in BE-05 (Backend Component Diagram).
+The context diagram shows the system as a single whole: \textbf{who} uses it, \textbf{which external systems} it interacts with, and \textbf{what data} crosses its boundary. The internal structure (frontend, backend, AI worker, databases) is described in BE-05 (Backend Component Diagram).
 
-The diagram is based on the technology selection in BE-03 (DEMO-22).
 
 % =====================================================
 \section{Context Diagram}
@@ -82,7 +80,7 @@ The diagram is based on the technology selection in BE-03 (DEMO-22).
 
 % system (centre)
 \node[system] (sys) at (0,0) {%
-  {\large\bfseries Intelligent Kanban System}\quad{\footnotesize [software system]}\\[5pt]
+  {\large\bfseries Intelligent Kanban System}\\[5pt]
   Kanban boards, tasks, comments, history, notifications.\\
   The AI assistant understands voice and text commands in\\
   Kazakh, Russian and English and proposes actions\\
@@ -112,7 +110,7 @@ The diagram is based on the technology selection in BE-03 (DEMO-22).
   \tikz\node[fill=c4ext, minimum width=0.5cm, minimum height=0.3cm, rounded corners=2pt]{}; External system\qquad
   \tikz\node[draw=c4ext!80!black, dashed, fill=c4ext!25, minimum width=0.5cm, minimum height=0.3cm, rounded corners=2pt]{}; Optional external system};
 \end{tikzpicture}
-\caption{System context diagram (C4, level 1). Users work through a web browser over HTTPS/WSS; emails from the email service reach users' mailboxes.}
+\caption{System context diagram. Users work through a web browser over HTTPS/WSS; emails from the email service reach users' mailboxes.}
 \label{fig:context}
 \end{figure}
 
@@ -179,13 +177,4 @@ Data that \textbf{never} leaves the system: passwords (stored as Argon2 hashes),
   \item Development tools (GitHub/GitLab, YouTrack) are not part of the running system and are not shown on the diagram.
   \item The AI assistant never changes data on its own: every action is performed only after the user confirms it and only within the user's permissions.
 \end{itemize}
-
-% =====================================================
-\section{Related Documents}
-
-\begin{itemize}
-  \item \textbf{BE-03 (DEMO-22)}: technology selection; source of the external systems and data-handling rules.
-  \item \textbf{BE-05 (DEMO-24)}: Backend Component Diagram; breaks the ``Intelligent Kanban System'' box down into components.
-\end{itemize}
-
 \end{document}
