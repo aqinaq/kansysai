@@ -1,6 +1,6 @@
 # Product Requirements and User Stories
 
-Issue: DEMO-21
+Issue: [DEMO-27](https://ai-kanban-thesis.youtrack.cloud/issue/DEMO-27)
 Status: Draft for team review
 
 ## 1. Product goal
