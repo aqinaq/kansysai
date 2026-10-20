@@ -1,0 +1,180 @@
+% BE-04: System Context Diagram — compile with XeLaTeX (Overleaf: Menu → Compiler → XeLaTeX)
+\documentclass[11pt,a4paper]{article}
+
+% ---------- language and fonts ----------
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{english}
+% fonts with Cyrillic glyphs, needed for the Kazakh/Russian command examples
+\IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}}{%
+  \IfFontExistsTF{Liberation Serif}{\setmainfont{Liberation Serif}}{\setmainfont{DejaVu Serif}}}
+\IfFontExistsTF{Arial}{\setsansfont{Arial}}{%
+  \IfFontExistsTF{Liberation Sans}{\setsansfont{Liberation Sans}}{\setsansfont{DejaVu Sans}}}
+\IfFontExistsTF{Consolas}{\setmonofont[Scale=0.9]{Consolas}}{\setmonofont[Scale=0.85]{DejaVu Sans Mono}}
+
+% ---------- layout ----------
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{microtype}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{xltabular}
+\usepackage{enumitem}
+\usepackage[table]{xcolor}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,fit,backgrounds}
+\usepackage{xurl}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+
+\setlist{itemsep=2pt,topsep=4pt}
+\setlength{\parskip}{4pt}
+\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{3em}
+\renewcommand{\arraystretch}{1.25}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\tblstart}{\small\rowcolors{2}{gray!7}{white}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+% colours of the C4 notation
+\definecolor{c4person}{HTML}{08427B}
+\definecolor{c4system}{HTML}{1168BD}
+\definecolor{c4ext}{HTML}{8A8A8A}
+
+\title{\textbf{BE-04: System Context Diagram}\\[4pt]
+\large Intelligent Kanban System with an AI Assistant}
+\author{Symbat Saparbay | Akbope Bakytkeldy\\ \small YouTrack: DEMO-23}
+\date{}
+
+\begin{document}
+\maketitle
+% =====================================================
+\section{Purpose}
+
+The context diagram shows the system as a single whole: \textbf{who} uses it, \textbf{which external systems} it interacts with, and \textbf{what data} crosses its boundary. The internal structure (frontend, backend, AI worker, databases) is described in BE-05 (Backend Component Diagram).
+
+
+% =====================================================
+\section{Context Diagram}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  font=\small,
+  person/.style={draw=c4person, fill=c4person, text=white, rounded corners=8pt, align=center,
+                 text width=3.2cm, minimum height=1.4cm, inner sep=4pt},
+  system/.style={draw=c4system, fill=c4system, text=white, rounded corners=6pt, align=center,
+                 text width=9.6cm, minimum height=2.6cm, inner sep=7pt},
+  ext/.style={draw=c4ext, fill=c4ext, text=white, rounded corners=6pt, align=center,
+              text width=3.6cm, minimum height=1.4cm, inner sep=4pt},
+  extopt/.style={ext, dashed, draw=c4ext!80!black, fill=c4ext!25, text=black!85},
+  arr/.style={-{Stealth[length=2.2mm]}, thick, draw=gray!60!black},
+  tag/.style={font=\scriptsize, fill=white, inner sep=2pt, align=center, text=black}
+]
+% people (top)
+\node[person] (owner)   at (-6.3, 4.6) {\textbf{Workspace}\\\textbf{owner / admin}\\{\footnotesize members, roles, settings}};
+\node[person] (manager) at (-2.1, 4.6) {\textbf{Project}\\\textbf{manager}\\{\footnotesize manager, teacher}};
+\node[person] (member)  at ( 2.1, 4.6) {\textbf{Project}\\\textbf{member}\\{\footnotesize employee, student}};
+\node[person] (viewer)  at ( 6.3, 4.6) {\textbf{Viewer}\\[2pt]{\footnotesize read-only access}};
+
+% system (centre)
+\node[system] (sys) at (0,0) {%
+  {\large\bfseries Intelligent Kanban System}\\[5pt]
+  Kanban boards, tasks, comments, history, notifications.\\
+  The AI assistant understands voice and text commands in\\
+  Kazakh, Russian and English and proposes actions\\
+  that are performed after confirmation.\\[4pt]
+  {\footnotesize Speech recognition (Whisper) and the local LLM run inside the system}};
+
+% external systems (bottom)
+\node[ext]    (llm)  at (-5.2,-4.4) {\textbf{Cloud LLM API}\\{\footnotesize Gemini Flash / OpenAI mini}};
+\node[ext]    (mail) at ( 0,  -4.4) {\textbf{Email service}\\{\footnotesize SMTP}};
+\node[extopt] (stt)  at ( 5.2,-4.4) {\textbf{Cloud STT}\\{\footnotesize fallback, disabled}\\{\footnotesize by default}};
+
+% people -> system
+\draw[arr, <->] (owner.south)   -- node[tag]{manages members\\and AI settings} ([xshift=0.9cm]sys.north west);
+\draw[arr, <->] (manager.south) -- node[tag]{projects, tasks,\\voice commands} (manager.south |- sys.north);
+\draw[arr, <->] (member.south)  -- node[tag]{own tasks,\\statuses, comments} (member.south |- sys.north);
+\draw[arr]      (viewer.south)  -- node[tag]{views\\boards} ([xshift=-0.9cm]sys.north east);
+
+% system -> external
+\draw[arr, <->] ([xshift=0.9cm]sys.south west) -- node[tag]{command text $\rightarrow$\\$\leftarrow$ action plan (JSON)} (llm.north);
+\draw[arr] (sys.south) -- node[tag]{notifications,\\deadline reminders} (mail.north);
+\draw[arr, <->, dashed] ([xshift=-0.9cm]sys.south east) -- node[tag]{audio $\rightarrow$\\$\leftarrow$ transcript} (stt.north);
+
+% legend
+\node[anchor=north, font=\scriptsize, align=center] at (0,-5.6) {%
+  \tikz\node[fill=c4person, minimum width=0.5cm, minimum height=0.3cm, rounded corners=2pt]{}; Person\qquad
+  \tikz\node[fill=c4system, minimum width=0.5cm, minimum height=0.3cm, rounded corners=2pt]{}; Our system\qquad
+  \tikz\node[fill=c4ext, minimum width=0.5cm, minimum height=0.3cm, rounded corners=2pt]{}; External system\qquad
+  \tikz\node[draw=c4ext!80!black, dashed, fill=c4ext!25, minimum width=0.5cm, minimum height=0.3cm, rounded corners=2pt]{}; Optional external system};
+\end{tikzpicture}
+\caption{System context diagram. Users work through a web browser over HTTPS/WSS; emails from the email service reach users' mailboxes.}
+\label{fig:context}
+\end{figure}
+
+% =====================================================
+\section{Users}
+
+The roles follow the RBAC model from BE-03: workspace roles (owner, admin, member) and project roles (manager, member, viewer). One person can have different roles in different projects.
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{3.1cm} L L}
+\toprule
+\textbf{Role} & \textbf{What they do in the system} & \textbf{Example AI commands} \\
+\midrule
+\endhead
+Workspace owner / admin & Creates the workspace, invites members, assigns roles; enables or disables the cloud LLM (private mode) and the cloud STT fallback; views the audit log & None (managed through the UI) \\
+Project manager & Creates projects and boards, adds members, creates and assigns tasks, sets deadlines and priorities, records meeting outcomes & «Создай задачу для Данияра: подготовить презентацию до пятницы, высокий приоритет»; “Which of our team's tasks are overdue?” \\
+Project member & Works on their own tasks: changes status, comments, creates tasks in accessible projects; receives notifications & «Задача по интеграции платёжной системы завершена»; «Даниярға ертеңге дейін API тексеру тапсырмасын бер» \\
+Viewer & Only views boards and tasks (for example, a teacher or a client); cannot change data & Search Tasks and Project Summary only \\
+\bottomrule
+\end{xltabular}}
+
+% =====================================================
+\section{External Systems}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{2.8cm} P{2.4cm} L P{3.2cm}}
+\toprule
+\textbf{System} & \textbf{Required?} & \textbf{Interaction} & \textbf{If unavailable} \\
+\midrule
+\endhead
+Cloud LLM API (Gemini Flash / OpenAI mini) & Yes in the default mode; no in private mode & Receives the command text (after speech recognition), project member names, the current date and time zone. Returns an action plan in JSON: action type, parameters, missing fields & Switch to the local LLM (Ollama); manual task management always works \\
+Email service (SMTP) & Yes & Sends emails: task assignment, mention, upcoming and overdue deadline, workspace invitation & Emails are queued and retried; in-app notifications keep working \\
+Cloud STT (ElevenLabs Scribe / OpenAI) & No, disabled by default & Only if an admin enables the fallback: receives audio, returns a transcript & The local STT is used; if it is also unavailable, the user types the command \\
+\bottomrule
+\end{xltabular}}
+
+\textbf{Why speech recognition is not an external system.} Whisper (including the Kazakh model) and the local LLM (Ollama) are deployed on our server and are part of the system. Therefore, in the default mode, voice \textbf{does not leave the system boundary}.
+
+% =====================================================
+\section{Data Crossing the System Boundary}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{3.4cm} P{2.6cm} L}
+\toprule
+\textbf{Data} & \textbf{Sent to} & \textbf{Protection} \\
+\midrule
+\endhead
+Voice messages & Nowhere (default) & Stored in MinIO with encryption, accessed via presigned URLs, deleted after 30 days. Sent to the cloud STT only if an admin enables the fallback \\
+Command text & Cloud LLM API & HTTPS; only the text of a single command is sent, without audio or the contents of other tasks. Not sent anywhere in private mode \\
+Project member names & Cloud LLM API & Only the names of members of the current project, without email addresses or other personal data; needed so the model can identify the assignee mention \\
+User email and notification text & Email service & TLS; the email contains the task title and a link, without transcripts or audio \\
+\bottomrule
+\end{xltabular}}
+
+Data that \textbf{never} leaves the system: passwords (stored as Argon2 hashes), tokens, the audit log, and the contents of tasks and comments from other projects.
+
+% =====================================================
+\section{Scope and Assumptions}
+
+\begin{itemize}
+  \item All users work through a web browser (desktop and mobile); voice is recorded in the browser. There is no separate mobile app.
+  \item Sign-in is by email and password; external identity providers (Google, university SSO) are not part of the first version.
+  \item Integrations with external task trackers, messengers and calendars (Jira, Telegram, Google Calendar) are not part of the first version; the architecture allows adding them later as new external systems.
+  \item Development tools (GitHub/GitLab, YouTrack) are not part of the running system and are not shown on the diagram.
+  \item The AI assistant never changes data on its own: every action is performed only after the user confirms it and only within the user's permissions.
+\end{itemize}
+\end{document}
