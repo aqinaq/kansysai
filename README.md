@@ -1,21 +1,25 @@
 # Intelligent Kanban System with an AI Assistant
 
-A diploma project for creating Kanban tasks from voice messages. The system will transcribe a voice message, suggest task details, and add a card to the board after the user reviews and confirms it.
+A diploma project for generating tasks and meeting summaries from voice messages. The system will transcribe recordings, identify actionable tasks, and let users review the results before adding tasks to a Kanban board.
 
 ## Problem and target users
 
-Small project teams often discuss work in voice messages. Creating Kanban cards from those messages manually takes time, and important details may be missed. This project is intended for teams that use voice messages to discuss and assign work.
+Work instructions, assignments, and meeting decisions are often communicated verbally. Turning these discussions into clear tasks manually takes time, and important details may be missed.
+
+The intended users include employees, project managers, teachers, and students who need to organize tasks from voice messages and meeting recordings.
 
 ## Expected outcome
 
 The planned system will let a user:
 
-1. Submit a voice message
-2. View its transcription and a suggested task
-3. Check and edit the task title, assignee, and deadline
-4. Confirm the task and see it on a Kanban board
+1. Submit a voice message or meeting recording.
+2. View its transcription.
+3. Review one or more suggested tasks, including their titles, descriptions, assignees, and deadlines when provided.
+4. View a summary of the meeting when applicable.
+5. Edit, confirm, or reject the suggested tasks.
+6. Add confirmed tasks to a Kanban board.
 
-The first version will process one task from one voice message. A task will not be saved without user confirmation.
+Task details will remain editable, and tasks will be saved only after user confirmation. Missing assignees or deadlines will not be invented by the system.
 
 ## Team
 
@@ -27,9 +31,11 @@ Both team members review each other's pull requests and contribute to the projec
 
 ## Current status
 
-This project is in the analysis and design stage. The repository currently contains an initial project proposal and a draft literature review. User research, comparisons, requirements, diagrams, and a prototype are the next planned deliverables.
+The project is in the analysis and design stage. The repository contains an initial project proposal and a draft literature review. A technology comparison and proposed stack have been submitted for review.
 
-A complete application is not available yet. Technology choices will be recorded after comparing alternatives against the project requirements.
+The next deliverables include user research, finalized requirements, architectural diagrams, and an interface prototype. The project documents will be updated to reflect the latest agreed requirements, including multiple tasks per message and meeting summaries.
+
+A complete application is not available yet. The technology choices will be documented after the comparison has been reviewed and agreed upon by the team.
 
 ## Project documents
 
@@ -39,6 +45,8 @@ A complete application is not available yet. Technology choices will be recorded
 
 ## Development workflow
 
-Work is tracked in YouTrack. For each task, we use a separate Git branch, descriptive commits, and a pull request reviewed by the other team member before merging into `main`.
+Work is tracked in YouTrack. Each meaningful task has an assignee, a deadline, and acceptance criteria.
+
+Changes are developed in separate Git branches and submitted through pull requests. The other team member reviews each pull request before it is merged into `main`. Branch names, commits, and pull requests reference the relevant YouTrack issue.
 
 Setup, run, and test instructions will be added when the first runnable implementation is available.
