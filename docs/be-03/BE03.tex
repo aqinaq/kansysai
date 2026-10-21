@@ -71,7 +71,7 @@ R5 & Response to a voice command within a few seconds & Fast STT, asynchronous p
 R6 & Protection of user data and voice recordings & Encryption, limited retention, access control \\
 R7 & Scalability and room for growth & Stateless API, separate AI worker, models swappable by configuration \\
 R8 & Reliability: AI errors, API outages, repeated requests & Fallback providers, idempotency, queues \\
-R9 & Visible development trail (GitLab, YouTrack) & GitLab CI, tests, history \\
+R9 & Visible development trail (GitHub, YouTrack) & GitHub Actions, tests, history \\
 \bottomrule
 \end{xltabular}}
 
@@ -222,19 +222,22 @@ Requirements: tool calling or JSON Schema, understanding of Kazakh, Russian and 
 \subsection{Comparison}
 
 {\tblstart
-\begin{xltabular}{\textwidth}{P{3.2cm} L L}
+\begin{xltabular}{\textwidth}{P{2.9cm} L L L}
 \toprule
-\textbf{Criterion} & \textbf{Local 7--8B LLM (Qwen 3 / ISSAI KazLLM via Ollama)} & \textbf{Cloud Flash/mini-class LLM (Gemini Flash, OpenAI mini)} \\
+\textbf{Criterion} & \textbf{Rule-based NLU (regex + spaCy NER)} & \textbf{Local 7--8B LLM (Qwen 3 / ISSAI KazLLM via Ollama)} & \textbf{Cloud Flash/mini-class LLM (Gemini Flash, OpenAI mini)} \\
 \midrule
 \endhead
-Kazakh & Qwen: moderate; KazLLM: good, but weaker at tool calling & Good \\
-Tool calling, several actions in one utterance & Unstable at 7--8B, especially in Kazakh & \textbf{Reliable} \\
-Speed & 3--15 s without a powerful GPU & \textbf{1--3 s} \\
-Cost & Hardware only & Estimate: $\approx$1.5k input + 300 output tokens per command $\approx$ \textbf{\$0.005 per command} \\
-Scaling & Requires more GPUs & Managed \\
-Privacy & Full & Only the command text and project member names are sent; no audio and no task contents \\
+Kazakh & No ready Kazakh pipeline; rules must be written by hand & Qwen: moderate; KazLLM: good, but weaker at tool calling & Good \\
+Several actions in one utterance & Very hard to cover with rules & Unstable at 7--8B, especially in Kazakh & \textbf{Reliable} \\
+Relative dates, Kazakh case forms & Separate rules for each form & Partly & Good \\
+Speed & \textbf{Milliseconds} & 3--15 s without a powerful GPU & \textbf{1--3 s} \\
+Cost & Development time only & Hardware only & Estimate: $\approx$1.5k input + 300 output tokens per command $\approx$ \textbf{\$0.005 per command} \\
+Scaling & Trivial & Requires more GPUs & Managed \\
+Privacy & Full & Full & Only the command text and project member names are sent; no audio and no task contents \\
 \bottomrule
 \end{xltabular}}
+
+Rule-based NLU was rejected because covering eight actions, three languages and mixed speech with hand-written rules is not realistic (R1, R2); it remains useful for small deterministic checks, such as recognising status and priority keywords.
 
 \subsection{Decision: Hybrid Behind a Single \code{CommandParser} Interface}
 
@@ -304,16 +307,16 @@ The \textbf{AI worker} is a separate process (ARQ or Celery + Redis). STT models
 \section{Database and Storage}
 
 {\tblstart
-\begin{xltabular}{\textwidth}{P{4.4cm} L L}
+\begin{xltabular}{\textwidth}{P{4cm} L L L}
 \toprule
-\textbf{Criterion} & \textbf{PostgreSQL} & \textbf{MongoDB} \\
+\textbf{Criterion} & \textbf{PostgreSQL} & \textbf{MySQL} & \textbf{MongoDB} \\
 \midrule
 \endhead
-Data model (workspace $\rightarrow$ project $\rightarrow$ board $\rightarrow$ column $\rightarrow$ task, members, roles) & Relational, foreign keys, transactions & Relations handled manually \\
-Access control and integrity & Constraints at database level & In application code \\
-Finding a task from a spoken description & pg\_trgm; pgvector if needed & Atlas Search \\
-Flexible AI data (transcript, plan) & JSONB & Native \\
-Audit and history & Append-only table & Collection \\
+Data model (workspace $\rightarrow$ project $\rightarrow$ board $\rightarrow$ column $\rightarrow$ task, members, roles) & Relational, foreign keys, transactions & Relational, foreign keys, transactions & Relations handled manually \\
+Finding a task from a spoken description & \textbf{pg\_trgm} fuzzy search; pgvector if needed & Full-text search, no trigram similarity & Atlas Search (cloud) \\
+Flexible AI data (transcript, plan) & \textbf{JSONB} with indexes & JSON type, weaker indexing & Native \\
+Access control and integrity & Constraints at database level & Constraints at database level & In application code \\
+Audit and history & Append-only table & Append-only table & Collection \\
 \bottomrule
 \end{xltabular}}
 
@@ -325,6 +328,23 @@ Audit and history & Append-only table & Collection \\
 \end{itemize}
 
 Key entities (detailed in the Database Schema): \code{users}, \code{workspaces}, \code{workspace\_members}, \code{projects}, \code{project\_members}, \code{boards}, \code{columns}, \code{tasks}, \code{task\_comments}, \code{task\_history}, \code{notifications}, \code{voice\_messages}, \code{ai\_commands}, \code{audit\_log}.
+
+% =====================================================
+\section{Component Interaction}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{3.2cm} L L L}
+\toprule
+\textbf{Decision} & \textbf{Option A} & \textbf{Option B} & \textbf{Option C} \\
+\midrule
+\endhead
+Client--server API & \textbf{REST + OpenAPI}: simple, generated client types, fits CRUD & GraphQL: flexible queries, but an extra schema layer and more complex caching & gRPC: fast, but poor browser support without a proxy \\
+Real-time board updates & \textbf{WebSocket}: two-way; AI command status and board changes & Server-Sent Events: one-way, simpler, no client messages & Polling: easy, but delays and extra load \\
+Long AI processing (STT, LLM) & \textbf{Redis job queue (ARQ/Celery)}: API stays responsive, workers scale separately & Processing inside the HTTP request: simple, but requests time out and block workers & RabbitMQ / Kafka: robust, but heavy for the project size \\
+\bottomrule
+\end{xltabular}}
+
+\textbf{Decision:} REST + OpenAPI for all CRUD and AI command endpoints, WebSocket for real-time updates, and a Redis-based job queue for speech recognition and command parsing (R4, R5, R7, R8).
 
 % =====================================================
 \section{Security and Data Protection}
@@ -357,6 +377,24 @@ Transport & HTTPS/WSS, CORS, rate limiting on AI endpoints \\
 \end{itemize}
 
 % =====================================================
+\section{Summary of Key Decisions}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{2.9cm} P{4.8cm} P{3.4cm} L}
+\toprule
+\textbf{Decision} & \textbf{Alternatives compared} & \textbf{Selected} & \textbf{Requirements} \\
+\midrule
+\endhead
+Speech-to-Text & Base Whisper, Kazakh fine-tuned Whisper, ElevenLabs Scribe, OpenAI transcribe & Self-hosted Whisper + Kazakh model, cloud fallback & R1, R5, R6, R8 \\
+Command understanding & Rule-based NLU, local LLM, cloud LLM & Cloud LLM + local LLM mode & R1, R2, R3, R5, R7 \\
+Frontend & React, Vue 3, Angular & React + TypeScript & R4 \\
+Backend & FastAPI, Django + DRF, Flask & FastAPI & R2, R4, R5 \\
+Database & PostgreSQL, MySQL, MongoDB & PostgreSQL & R3, R4, R6 \\
+Component interaction & REST / GraphQL / gRPC; WebSocket / SSE / polling; job queue / in-request / message broker & REST, WebSocket, Redis job queue & R4, R5, R7, R8 \\
+\bottomrule
+\end{xltabular}}
+
+% =====================================================
 \section{Final Stack}
 
 {\tblstart
@@ -380,7 +418,7 @@ Auth & JWT + refresh, Argon2, RBAC & Workspace and project permissions \\
 Notifications & WebSocket + email, periodic reminders & Changes and deadlines \\
 Infrastructure & Docker Compose (frontend, api, worker, postgres, redis, minio, ollama) & One-command startup \\
 Testing & pytest, httpx, Playwright (e2e), AI evaluation set (30+ scenarios), jiwer (WER) & Tests both the AI and system operations \\
-CI and process & GitLab CI (linters, tests, build), YouTrack & Development trail \\
+CI and process & GitHub Actions (linters, tests, build), YouTrack & Development trail \\
 \bottomrule
 \end{xltabular}}
 
