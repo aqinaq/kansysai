@@ -1,0 +1,366 @@
+// Intelligent Kanban System with an AI Assistant
+// BE-06: Database schema (PostgreSQL 16) — paste into https://dbdiagram.io
+// Entities follow BE-05 (Backend Component Diagram).
+
+Project intelligent_kanban {
+  database_type: 'PostgreSQL'
+  Note: 'Kanban product with an AI assistant for voice and text commands (kk/ru/en)'
+}
+
+// ---------- enums ----------
+
+Enum language_code {
+  kk
+  ru
+  en
+}
+
+Enum workspace_role {
+  owner
+  admin
+  member
+}
+
+Enum project_role {
+  manager
+  member
+  viewer
+}
+
+Enum column_category {
+  todo
+  in_progress
+  done
+}
+
+Enum task_priority {
+  low
+  medium
+  high
+  urgent
+}
+
+Enum change_source {
+  ui
+  ai
+}
+
+Enum input_type {
+  voice
+  text
+}
+
+Enum ai_command_status {
+  uploaded
+  transcribed
+  proposed
+  needs_clarification
+  confirmed
+  executed
+  rejected
+  failed
+}
+
+Enum ai_action_type {
+  create_task
+  update_task
+  change_status
+  assign_user
+  change_deadline
+  change_priority
+  search_tasks
+  project_summary
+}
+
+Enum action_decision {
+  pending
+  accepted
+  rejected
+}
+
+Enum notification_type {
+  task_assigned
+  task_updated
+  status_changed
+  comment_added
+  mention
+  deadline_soon
+  deadline_overdue
+  ai_command_ready
+}
+
+// ---------- users and access ----------
+
+Table users {
+  id uuid [pk, default: `gen_random_uuid()`]
+  email varchar(255) [not null, unique]
+  password_hash varchar(255) [not null, note: 'Argon2']
+  full_name varchar(120) [not null]
+  preferred_language language_code [not null, default: 'ru']
+  timezone varchar(64) [not null, default: 'Asia/Almaty', note: 'used to resolve relative deadlines']
+  is_active boolean [not null, default: true]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+}
+
+Table refresh_tokens {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null, ref: > users.id]
+  token_hash varchar(255) [not null, unique]
+  expires_at timestamptz [not null]
+  revoked_at timestamptz
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    user_id
+  }
+}
+
+Table workspaces {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(120) [not null]
+  owner_id uuid [not null, ref: > users.id]
+  cloud_llm_enabled boolean [not null, default: true, note: 'false = private mode, local LLM only']
+  cloud_stt_fallback_enabled boolean [not null, default: false]
+  voice_retention_days int [not null, default: 30]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table workspace_members {
+  workspace_id uuid [not null, ref: > workspaces.id]
+  user_id uuid [not null, ref: > users.id]
+  role workspace_role [not null, default: 'member']
+  joined_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (workspace_id, user_id) [pk]
+    user_id
+  }
+}
+
+Table workspace_invitations {
+  id uuid [pk, default: `gen_random_uuid()`]
+  workspace_id uuid [not null, ref: > workspaces.id]
+  email varchar(255) [not null]
+  role workspace_role [not null, default: 'member']
+  token_hash varchar(255) [not null, unique]
+  invited_by uuid [not null, ref: > users.id]
+  expires_at timestamptz [not null]
+  accepted_at timestamptz
+  created_at timestamptz [not null, default: `now()`]
+}
+
+// ---------- projects and boards ----------
+
+Table projects {
+  id uuid [pk, default: `gen_random_uuid()`]
+  workspace_id uuid [not null, ref: > workspaces.id]
+  name varchar(120) [not null]
+  description text
+  created_by uuid [not null, ref: > users.id]
+  created_at timestamptz [not null, default: `now()`]
+  archived_at timestamptz
+
+  indexes {
+    workspace_id
+  }
+}
+
+Table project_members {
+  project_id uuid [not null, ref: > projects.id]
+  user_id uuid [not null, ref: > users.id]
+  role project_role [not null, default: 'member']
+  added_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (project_id, user_id) [pk]
+    user_id
+  }
+  Note: 'Assignees must be project members; AI assignee mentions are resolved only against this table'
+}
+
+Table boards {
+  id uuid [pk, default: `gen_random_uuid()`]
+  project_id uuid [not null, ref: > projects.id]
+  name varchar(120) [not null]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table board_columns {
+  id uuid [pk, default: `gen_random_uuid()`]
+  board_id uuid [not null, ref: > boards.id]
+  name varchar(60) [not null]
+  position int [not null]
+  category column_category [not null, note: 'maps column names to statuses, e.g. Done -> done']
+
+  indexes {
+    (board_id, position) [unique]
+  }
+}
+
+// ---------- tasks ----------
+
+Table tasks {
+  id uuid [pk, default: `gen_random_uuid()`]
+  project_id uuid [not null, ref: > projects.id]
+  board_id uuid [not null, ref: > boards.id]
+  column_id uuid [not null, ref: > board_columns.id, note: 'status = column category']
+  title varchar(255) [not null]
+  description text
+  assignee_id uuid [ref: > users.id, note: 'NULL when not assigned; never invented by AI']
+  reporter_id uuid [not null, ref: > users.id]
+  priority task_priority [not null, default: 'medium']
+  deadline timestamptz
+  position numeric(20,10) [not null, note: 'order inside a column']
+  created_via change_source [not null, default: 'ui']
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  deleted_at timestamptz [note: 'soft delete, kept for history']
+
+  indexes {
+    project_id
+    (column_id, position)
+    (assignee_id, deadline) [note: 'overdue and due-soon queries']
+    title [note: 'GIN index with gin_trgm_ops in the migration: fuzzy search when AI refers to a task by description']
+  }
+}
+
+Table task_comments {
+  id uuid [pk, default: `gen_random_uuid()`]
+  task_id uuid [not null, ref: > tasks.id]
+  author_id uuid [not null, ref: > users.id]
+  body text [not null]
+  created_at timestamptz [not null, default: `now()`]
+  edited_at timestamptz
+
+  indexes {
+    (task_id, created_at)
+  }
+}
+
+Table task_history {
+  id bigint [pk, increment]
+  task_id uuid [not null, ref: > tasks.id]
+  changed_by uuid [not null, ref: > users.id]
+  source change_source [not null]
+  ai_command_id uuid [ref: > ai_commands.id]
+  field varchar(40) [not null, note: 'title, assignee, deadline, priority, column, ...']
+  old_value jsonb
+  new_value jsonb
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (task_id, created_at)
+  }
+  Note: 'Append-only'
+}
+
+// ---------- voice and AI commands ----------
+
+Table voice_messages {
+  id uuid [pk, default: `gen_random_uuid()`]
+  project_id uuid [not null, ref: > projects.id]
+  uploaded_by uuid [not null, ref: > users.id]
+  storage_key varchar(255) [not null, unique, note: 'object key in MinIO; file is encrypted']
+  mime_type varchar(60) [not null, note: 'audio/webm, audio/ogg, audio/mpeg, audio/wav']
+  duration_sec int [not null]
+  size_bytes int [not null]
+  expires_at timestamptz [not null, note: 'created_at + workspace.voice_retention_days']
+  deleted_at timestamptz
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    expires_at [note: 'retention clean-up job']
+  }
+}
+
+Table ai_commands {
+  id uuid [pk, default: `gen_random_uuid()`]
+  project_id uuid [not null, ref: > projects.id]
+  user_id uuid [not null, ref: > users.id]
+  input_type input_type [not null]
+  voice_message_id uuid [ref: - voice_messages.id]
+  language_hint language_code [note: 'language selected by the user; NULL = auto']
+  detected_language language_code
+  transcript text
+  transcript_edited boolean [not null, default: false]
+  plan jsonb [note: 'raw validated action plan from the LLM']
+  status ai_command_status [not null, default: 'uploaded']
+  clarification_question text
+  error_message text
+  idempotency_key varchar(64) [not null, unique, note: 'repeated confirm returns the same result']
+  llm_provider varchar(40) [note: 'cloud or local model name']
+  stt_ms int
+  llm_ms int
+  created_at timestamptz [not null, default: `now()`]
+  confirmed_at timestamptz
+  executed_at timestamptz
+  expires_at timestamptz [not null, note: 'proposed commands expire after 24 h']
+
+  indexes {
+    (project_id, created_at)
+    (user_id, status)
+  }
+}
+
+Table ai_command_actions {
+  id uuid [pk, default: `gen_random_uuid()`]
+  ai_command_id uuid [not null, ref: > ai_commands.id]
+  position int [not null, note: 'order of the action in the plan']
+  action_type ai_action_type [not null]
+  params jsonb [not null, note: 'mentions as spoken, e.g. assignee_mention, deadline_phrase']
+  resolved jsonb [note: 'IDs resolved by the backend: assignee_id, task_id, deadline']
+  missing_fields text[] [note: 'fields the user must fill before confirming']
+  decision action_decision [not null, default: 'pending']
+  target_task_id uuid [ref: > tasks.id, note: 'task created or changed by this action']
+  result jsonb [note: 'for search_tasks / project_summary: IDs of real tasks returned']
+
+  indexes {
+    (ai_command_id, position) [unique]
+  }
+  Note: 'One command can contain several actions; each is accepted or rejected separately'
+}
+
+// ---------- notifications and audit ----------
+
+Table notifications {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null, ref: > users.id]
+  type notification_type [not null]
+  task_id uuid [ref: > tasks.id]
+  ai_command_id uuid [ref: > ai_commands.id]
+  payload jsonb
+  read_at timestamptz
+  emailed_at timestamptz
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (user_id, read_at)
+    (task_id, type) [note: 'avoid duplicate deadline reminders']
+  }
+}
+
+Table notification_preferences {
+  user_id uuid [pk, ref: - users.id]
+  in_app boolean [not null, default: true]
+  email_assignment boolean [not null, default: true]
+  email_deadline boolean [not null, default: true]
+  email_comments boolean [not null, default: false]
+}
+
+Table audit_log {
+  id bigint [pk, increment]
+  user_id uuid [ref: > users.id]
+  workspace_id uuid [ref: > workspaces.id]
+  action varchar(60) [not null, note: 'login, member_added, role_changed, ai_command_confirmed, ...']
+  entity_type varchar(40)
+  entity_id uuid
+  details jsonb
+  ip_address inet
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (workspace_id, created_at)
+  }
+  Note: 'Append-only'
+}
