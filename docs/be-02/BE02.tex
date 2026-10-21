@@ -1,0 +1,197 @@
+% BE-02: Existing System Comparison — compile with XeLaTeX (Overleaf: Menu → Compiler → XeLaTeX)
+\documentclass[11pt,a4paper]{article}
+
+% ---------- language and fonts ----------
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{english}
+\IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}}{%
+  \IfFontExistsTF{Liberation Serif}{\setmainfont{Liberation Serif}}{\setmainfont{DejaVu Serif}}}
+\IfFontExistsTF{Arial}{\setsansfont{Arial}}{%
+  \IfFontExistsTF{Liberation Sans}{\setsansfont{Liberation Sans}}{\setsansfont{DejaVu Sans}}}
+\IfFontExistsTF{Consolas}{\setmonofont[Scale=0.9]{Consolas}}{\setmonofont[Scale=0.85]{DejaVu Sans Mono}}
+
+% ---------- layout ----------
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{microtype}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{xltabular}
+\usepackage{enumitem}
+\usepackage[table]{xcolor}
+\usepackage{caption}
+\usepackage{pdflscape}
+\usepackage{xurl}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black,citecolor=blue!50!black]{hyperref}
+
+\setlist{itemsep=2pt,topsep=4pt}
+\setlength{\parskip}{4pt}
+\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{3em}
+\renewcommand{\arraystretch}{1.25}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\tblstart}{\small\rowcolors{2}{gray!7}{white}}
+\newcommand{\src}[1]{\textsuperscript{[#1]}}
+
+% rating marks
+\newcommand{\yes}{\textcolor{green!45!black}{\textbf{Yes}}}
+\newcommand{\prt}{\textcolor{orange!80!black}{\textbf{Partial}}}
+\newcommand{\no}{\textcolor{red!65!black}{\textbf{No}}}
+\newcommand{\nd}{\textcolor{gray}{\textbf{Not found}}}
+
+\title{\textbf{BE-02: Existing System Comparison}\\[4pt]
+\large Intelligent Kanban System with an AI Assistant}
+\author{Symbat Saparbay | Akbope Bakytkeldy\\ \small YouTrack: DEMO-21}
+\date{}
+
+\begin{document}
+\maketitle
+
+% =====================================================
+\section{Purpose}
+
+This document compares existing task-management systems against one consistent set of criteria in order to answer two questions:
+\begin{enumerate}
+  \item Which parts of the proposed voice-to-Kanban workflow already exist in other products?
+  \item Which combination of capabilities is still missing, and therefore justifies building our system?
+\end{enumerate}
+
+Every claim about another product is linked to a source (Section~\ref{sec:refs}). Where a feature is not described in the sources we reviewed, the table says ``Not found'' rather than ``No'', because absence from documentation does not prove that the feature does not exist. Sources were checked on 21 October 2026; AI features in these products change quickly.
+
+% =====================================================
+\section{Selection of Systems}
+
+The systems were selected to cover the three groups our target users (employees, project managers, teachers and students) actually use or could use:
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{2.6cm} P{4.2cm} L}
+\toprule
+\textbf{System} & \textbf{Group} & \textbf{Why it was selected} \\
+\midrule
+\endhead
+Trello & Kanban board (mainstream) & The reference Kanban tool; closest to our board user interface; has built-in AI features \\
+Jira + Rovo & Team project management (mainstream) & Standard tool for software and project teams; AI assistant Rovo creates and updates work items \\
+ClickUp + Brain & All-in-one work management (mainstream) & Combines boards with an AI notetaker that turns meeting action items into tasks, and voice ``Talk to Text'' \\
+Todoist + Ramble & Task manager with voice capture & The most direct example of voice-to-task: Ramble turns speech into several tasks with dates, priorities and assignees \\
+Hypertask & AI-native project board & A new Kanban board shared by people and AI agents, with AI chat and AI task writing; identified in the team's initial review \\
+\bottomrule
+\end{xltabular}}
+
+\textbf{Screened but excluded.} The team's initial review (DEMO-21, first draft) also covered \textit{Vibe Kanban}, \textit{Formic} and \textit{KaibanJS}. They were excluded from the main comparison because they target software developers and coding agents (running agents on code, decomposing coding goals, or a developer framework) rather than general teams. Formic's decomposition of a goal into 3--8 subtasks remains a useful reference for our multi-task extraction.
+
+% =====================================================
+\section{Comparison Criteria}
+
+The nine criteria follow directly from the project requirements (product requirements document and BE-03):
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{0.9cm} P{4.8cm} L}
+\toprule
+\textbf{ID} & \textbf{Criterion} & \textbf{Why it matters for our project} \\
+\midrule
+\endhead
+C1 & Team Kanban board with roles & Core product: shared boards, members and permissions \\
+C2 & Voice input that produces tasks & Main input channel of our assistant \\
+C3 & Several tasks from one message or meeting & Supervisor cases 2 and 6: several assignments in one utterance, meeting outcomes \\
+C4 & Changing existing tasks with natural language & Cases 3 and 4: change deadline, priority, status, assignee \\
+C5 & Answers based on real project data & Case 5: overdue tasks, project summary without invented tasks \\
+C6 & User review before AI changes are saved & Our core safety rule: AI only proposes \\
+C7 & Kazakh and mixed Kazakh--Russian speech & Case 7; our main market \\
+C8 & Data hosting and private AI mode & Voice recordings are sensitive; some organisations cannot send data to external clouds \\
+C9 & Cost of AI features & Affordability for student and small teams \\
+\bottomrule
+\end{xltabular}}
+
+% =====================================================
+\begin{landscape}
+\section{Comparison Table}
+
+{\footnotesize\rowcolors{2}{gray!7}{white}
+\setlength{\tabcolsep}{4pt}
+\begin{xltabular}{\linewidth}{P{2.7cm} L L L L L L}
+\toprule
+\textbf{Criterion} & \textbf{Trello} & \textbf{Jira + Rovo} & \textbf{ClickUp + Brain} & \textbf{Todoist + Ramble} & \textbf{Hypertask} & \textbf{Our system (planned)} \\
+\midrule
+\endhead
+C1 Team Kanban board with roles & \yes{} Boards and workspaces\src{1} & \yes{} Boards and project permissions\src{3} & \yes{} Board view in workspaces\src{6} & \prt{} Board view, teams; task manager first\src{8} & \yes{} Kanban board shared by people and agents\src{10} & \yes{} Workspaces, projects, boards, roles \\
+C2 Voice input that produces tasks & \nd{} No voice input in reviewed sources\src{1,2} & \nd{} Not mentioned on the Jira AI page\src{3} & \yes{} ``Talk to Text'' converts ideas into tasks\src{7} & \yes{} Ramble turns speech into tasks\src{8,9} & \prt{} Voice dictation reported in the team's review of product material; not shown on the current landing page\src{10} & \yes{} Browser recording, self-hosted STT \\
+C3 Several tasks from one message or meeting & \prt{} AI-generated board from a described goal (text)\src{2} & \prt{} Captures work from Confluence, Slack, email; breaks work into smaller tasks\src{3} & \yes{} AI Notetaker turns meeting action items into assigned tasks\src{5} & \yes{} Several tasks per session (pause between items)\src{9} & \nd{} No extraction of several tasks from speech found\src{10} & \yes{} Several actions per utterance; meeting summary to task drafts \\
+C4 Changing existing tasks with natural language & \nd{} & \yes{} Update work items from Rovo chat\src{3} & \prt{} Autopilot updates priorities and assignments by triggers, not by command\src{6} & \no{} Edits only inside the current session preview\src{9} & \prt{} AI chat manages the board\src{10} & \yes{} Update, status, assignee, deadline, priority by voice or text \\
+C5 Answers based on real project data & \prt{} Card content summarisation\src{2} & \prt{} Work item summaries and search\src{3} & \prt{} AI Search \& Ask over tasks and docs (Enterprise AI)\src{6} & \nd{} & \prt{} AI chat over the board; grounding not documented\src{10} & \yes{} Search and summary run as database queries; no invented tasks \\
+C6 User review before AI changes & \nd{} & \nd{} & \nd{} Review step before tasks are created not described\src{5} & \yes{} Live preview; tasks added with ``Add tasks''\src{9} & \prt{} Approval gates for agent work (team review)\src{10} & \yes{} Every change requires confirmation; idempotent confirm \\
+C7 Kazakh and mixed speech & \nd{} & \nd{} & \nd{} Languages not listed\src{5,7} & \no{} 40+ languages incl. Russian; Kazakh not listed\src{9} & \nd{} & \yes{} Kazakh model + language routing for mixed speech \\
+C8 Data hosting and private AI mode & \no{} Cloud service only & \prt{} Full AI needs Atlassian Cloud; Data Center only via connectors\src{4} & \no{} Cloud service & \no{} Cloud service & \prt{} Hosted; bring-your-own-key plan\src{10} & \yes{} Voice processed on own server; optional local LLM \\
+C9 Cost of AI features & \yes{} AI included in Standard and Premium plans\src{2} & \prt{} Included in Cloud plans with credit limits (25/70/150 per user per month); overage \$0.01 per credit\src{4} & \prt{} Brain \$9, Everything AI (with Notetaker) \$28 per user per month, billed for every member\src{6} & \prt{} 10 sessions per month on Free/Beginner; unlimited on Pro/Business\src{9} & \prt{} Free starter allowance; \$8 (own keys) or \$16 per user per month\src{10} & \yes{} Estimated $\approx$\$0.005 per command (BE-03) \\
+\bottomrule
+\end{xltabular}}
+
+{\footnotesize \yes{} documented in the sources; \prt{} partly or with limitations; \no{} documented as not supported; \nd{} not found in the reviewed sources. Superscripts refer to Section~\ref{sec:refs}.}
+\end{landscape}
+
+% =====================================================
+\section{Strengths and Limitations of Each System}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{2.4cm} L L}
+\toprule
+\textbf{System} & \textbf{Strengths} & \textbf{Limitations for our users} \\
+\midrule
+\endhead
+Trello & Simple, familiar Kanban board; AI content generation and AI-generated boards now included in Standard plans & No voice input or command-based task editing in the reviewed sources; AI works on card text, not on team workflows; cloud only \\
+Jira + Rovo & Strong AI: captures work from several sources, breaks work down, updates items from chat, summarises; mature permissions & Complex for students and small teams; full AI only in Atlassian Cloud; credit limits; no voice or Kazakh support found \\
+ClickUp + Brain & Closest to our meeting scenario: AI Notetaker turns action items into assigned tasks; voice ``Talk to Text'' & AI is a paid add-on billed for every workspace member; review before task creation not described; languages not listed; cloud only \\
+Todoist + Ramble & Best voice-to-task experience: several tasks per session, dates, priorities, assignees, live preview before adding & Personal task manager first; cannot change existing tasks by voice; Kazakh not supported; free plan limited to 10 sessions per month \\
+Hypertask & Board designed for people and AI agents together; AI chat and triage; bring-your-own-key option & Young product; most information comes from the vendor's own website; no multi-task extraction from speech found; Kazakh not documented \\
+\bottomrule
+\end{xltabular}}
+
+% =====================================================
+\section{Gap Analysis and Justification}
+
+Each capability of our system already exists \emph{somewhere}: Todoist extracts several tasks from speech with a preview, ClickUp turns meeting action items into tasks, Jira's Rovo updates work items from chat. The gap is in the \textbf{combination} and in the \textbf{local context}:
+
+\begin{enumerate}
+  \item \textbf{No reviewed system covers C2--C6 together.} Todoist creates tasks by voice but cannot change existing ones; Jira changes existing items but has no voice input; ClickUp converts meetings into tasks but does not describe a review step.
+  \item \textbf{Kazakh and mixed Kazakh--Russian speech (C7) is not supported or not documented} in any of the five systems. Todoist explicitly lists Russian but not Kazakh.
+  \item \textbf{Voice data stays in the cloud (C8)} in all mainstream systems. Our design processes voice on our own server and offers a local LLM mode.
+  \item \textbf{Safety rule for team data.} Only Todoist documents a review step, and only for new personal tasks. Our system requires confirmation for every change (create, update, status, assignment) and checks the user's permissions.
+\end{enumerate}
+
+\textbf{Conclusion.} The proposed system is justified not by a single new feature, but by bringing together voice and text commands for the full task life cycle on a team Kanban board, with mandatory confirmation, answers grounded in real project data, and support for Kazakh, Russian, English and mixed speech.
+
+\subsection{Ideas Adopted from Existing Systems}
+
+\begin{itemize}
+  \item From \textbf{Todoist Ramble}: live preview while the user speaks; voice corrections such as ``remove that''; pausing between items to separate tasks.
+  \item From \textbf{ClickUp AI Notetaker}: meeting recording $\rightarrow$ action items $\rightarrow$ task drafts with assignees.
+  \item From \textbf{Jira Rovo}: breaking larger work into smaller tasks; summaries with status, blockers and next steps.
+  \item From \textbf{Formic} (excluded tool): decomposition of a goal into a bounded number of subtasks.
+\end{itemize}
+
+% =====================================================
+\section{Limitations of This Comparison}
+
+\begin{itemize}
+  \item Most sources are vendor pages and documentation; they describe intended functionality, not measured quality. Third-party reviews are used only for pricing.
+  \item The systems were not tested hands-on with Kazakh or mixed speech. ``Not found'' means not documented, not proven absent.
+  \item AI features and prices change frequently; the comparison reflects sources checked on 21 October 2026 and should be re-checked before the final defence.
+\end{itemize}
+
+% =====================================================
+\section{References}\label{sec:refs}
+
+\begin{enumerate}[label={[\arabic*]}, leftmargin=*]
+  \item Trello. Pricing and plans. \url{https://trello.com/pricing}
+  \item PricingSaaS. Trello: AI features moved to Standard plan (capture of 3 August 2026). \url{https://pricingsaas.com/companies/trello/diffs/2026W32}
+  \item Atlassian. AI in Jira (Rovo). \url{https://www.atlassian.com/software/jira/ai}
+  \item Atlassian. Rovo licensing and credits. \url{https://www.atlassian.com/licensing/rovo}
+  \item ClickUp. AI Notetaker. \url{https://clickup.com/brain/ai-notetaker}
+  \item eesel AI. ClickUp Brain review: features, pricing and limits (2026; written by a competitor, used for pricing). \url{https://eesel.ai/blog/clickup-brain}
+  \item ClickUp. Talk to Text. \url{https://clickup.com/p/talk-to-text/capturing-ideas}
+  \item TechCrunch (21 January 2026). Todoist's app now lets you add tasks by speaking to its AI. \url{https://techcrunch.com/2026/01/21/todoists-app-now-lets-you-add-tasks-to-your-to-do-list-by-speaking-to-its-ai/}
+  \item Todoist Help Center. Dictate to add tasks with Ramble. \url{https://todoist.com/help/articles/21532676695580}
+  \item Hypertask. Product website and pricing. \url{https://hypertask.ai}
+\end{enumerate}
+
+\end{document}
