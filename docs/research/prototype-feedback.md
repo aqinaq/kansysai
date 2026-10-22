@@ -78,3 +78,22 @@ For each task, record success, partial completion, or failure; where the partici
 
 After the sessions, replace “Pending” with evidence, summarize completion by task, rank new findings, and link any resulting fixes. Until then, DEMO-30 remains in progress and this document supports only an internal prototype walkthrough.
 
+
+
+## Product team walkthrough: board and assistant (22 October 2026)
+
+**Source:** First-person feedback from the product/frontend team member after exploring the prototype. This is an internal self-review, not an independent participant session. It is recorded separately from the earlier scripted walkthrough and does not fill P1, P2, or P3 above. No task-completion score or timing was collected.
+
+| Flow explored | Reported observation | Requested change |
+| --- | --- | --- |
+| Workspace and Kanban board | The To do, In progress, and Done columns made status understandable to a first-time Kanban user. The reviewer opened a task card and found the status control in its details. A quick status change required opening the card, choosing a status, and saving. | Let users drag a card to another status column; keep the details view for title, deadline, assignee, and other edits. |
+| “Several tasks” assistant sample | The preview showed two proposals with titles, assignees, and deadlines. The reviewer could inspect them and saw that a proposal could be unchecked before confirmation. The confirmation step felt clear and gave control over what would be added. | Show a short description on each proposal before confirmation. |
+| Ambiguous “diagram task” sample | The assistant offered two similar diagram tasks instead of changing one automatically. After selecting a task, the reviewer could inspect the proposed status change before confirming. Current status and deadline helped distinguish the choices. | Add further identifying context, such as project or board section where available. |
+
+### Additional findings and proposed acceptance checks
+
+- **F4 — Direct board status change.** Observation: the reviewer found the status control in task details and wanted a faster way to make routine progress updates. Proposal: support dragging a card between To do, In progress, and Done. Check that the card moves to the destination column and task details reflect the new status. The current prototype resets on reload by design. Preserve the details status control for accessibility and deliberate edits.
+- **F5 — Proposal description.** Observation: the reviewer could review title, assignee, and deadline but wanted more context before confirming. Proposal: show a short task description for each generated proposal. Check that the description is visible during selection and remains editable before confirmation.
+- **F6 — Disambiguation context.** Observation: similar diagram task names required careful reading, even with status and deadline shown. Proposal: show the project name or board section when that information is available, without inventing a distinction in the current shared-board demo. Check that two similarly named choices can be told apart before selection.
+
+**Provisional priority after this self-review:** F1 lost edits during clarification; F4 direct board status change; F5 proposal descriptions; F6 clearer disambiguation; F2 future-relative demo deadline; F3 shared-board explanation. This updates the earlier three-item priority table. Validate the order with independent users before treating it as a usability conclusion.
