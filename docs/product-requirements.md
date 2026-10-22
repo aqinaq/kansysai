@@ -1,15 +1,14 @@
 # Product Requirements and User Stories
 
-Issue: [DEMO-27](https://ai-kanban-thesis.youtrack.cloud/issue/DEMO-27)
-Status: Draft for team review
+Original issue: [DEMO-27](https://ai-kanban-thesis.youtrack.cloud/issue/DEMO-27)  
+Scope and status update: [DEMO-33](https://ai-kanban-thesis.youtrack.cloud/projects/DEMO/issues/DEMO-33)  
+Status: Draft for team review; MVP priorities are proposed pending team agreement
 
 ## 1. Product goal
 
-Develop a Kanban application that helps users manage tasks through
-manual interaction, voice commands, and text commands.
+Develop a Kanban application that helps users manage tasks manually and through voice and text commands. A message may produce one or more separate task proposals.
 
-The AI assistant interprets commands and proposes actions. Changes
-are applied only after user confirmation and backend validation.
+The AI assistant interprets commands and proposes actions. Users can inspect and correct a transcript, resolve unclear details, and review each proposal. Changes are applied only after user confirmation and backend validation.
 
 ## 2. Target users
 
@@ -18,8 +17,7 @@ are applied only after user confirmation and backend validation.
 - Teachers assigning and monitoring work
 - Students organizing individual and group projects
 
-These are intended user groups. Their needs will be investigated
-through user discussions.
+These are intended user groups. Three initial user interviews informed the review and clarification flows; further prototype testing is planned. The interviews do not represent all potential users.
 
 ## 3. Team
 
@@ -44,9 +42,48 @@ The planned product includes:
 - Notifications about changes and approaching deadlines
 - Kazakh, Russian, English, and mixed-language input
 
-## 5. AI actions
+## 5. MVP boundary and priorities
 
-The assistant must support:
+The first working MVP will demonstrate a persistent project Kanban board and task creation from voice or text input. A user can inspect and correct the transcript, review one or more proposed tasks separately, resolve unclear details, and confirm which tasks are saved. Manual board operations and backend validation support this flow. The prototype currently demonstrates these interactions with simulated voice and AI behavior; it is not the working MVP.
+
+The priorities below describe the **first working MVP**, not whether a story belongs in the final product. All 18 stories remain in the planned product scope. The assignments are proposed for team and supervisor review before implementation planning is finalized.
+
+| Priority | Meaning |
+| --- | --- |
+| Must | Needed for the first working MVP or to perform its actions safely |
+| Should | Important for the next iteration after the MVP |
+| Later | Planned for the complete product after the first MVP |
+
+### Story priorities and planned verification
+
+The checks describe expected verification, not tests already passed. A story marked Should or Later may still contain a safety rule that applies to the MVP: task assignment must use a valid project member, and MVP task changes must be recorded in an audit trail.
+
+| Story | MVP priority | How fulfilment will be checked |
+| --- | --- | --- |
+| US-01 Registration and login | Must | Register, log in, reject invalid credentials, and deny protected project data to an unauthenticated user. |
+| US-02 Workspaces and projects | Must | Create a project in a workspace, reload, and confirm that only accessible projects appear. |
+| US-03 Project membership | Should | Add a member, display membership, reject an unauthorized membership change, and reject assignment to a nonmember. In the MVP, any assignee used by task creation must already be a valid project member. |
+| US-04 Manual task management | Must | Create and edit a task, reload the board, and check that invalid titles and unauthorized deletion are rejected. |
+| US-05 Kanban board | Must | Move a task to a valid column and confirm its saved position after reloading. |
+| US-06 Comments and history | Should | Add a comment and inspect its author and time; change a task and inspect the history entry. The MVP must still record who made its task changes. |
+| US-07 Voice input and transcription | Must | Submit supported audio, view processing and transcript, correct the text before extraction, and check failure handling. |
+| US-08 Task creation by voice or text | Must | Produce editable drafts from both inputs; confirm one draft and reject another; verify that only the confirmed draft is saved. |
+| US-09 Multiple tasks per message | Must | Submit one message with several assignments and verify separate, independently selectable drafts. |
+| US-10 Updating existing tasks | Should | Match a task, preview changes, resolve multiple matches, and verify no update before confirmation. |
+| US-11 Status, assignee, deadline, and priority commands | Should | Test each command type, invalid values, relative dates, and ambiguous values before any change is saved. |
+| US-12 Task search | Should | Search accessible stored tasks, check filters and empty results, and confirm no invented records appear. |
+| US-13 Project and meeting summaries | Later | Compare summaries and action items with accessible project records or supplied meeting input; check missing details and confirmation. |
+| US-14 Multilingual interaction | Should | Test Kazakh, Russian, English, and mixed speech; inspect language selection, editable fields, and interface localization. MVP voice support must state its tested languages honestly. |
+| US-15 Unclear and unrelated commands | Must | Submit ambiguous, missing-detail, and unrelated inputs; verify clarification or explanation and no unconfirmed data change. |
+| US-16 Access protection | Must | Try manual and AI actions with an unauthorized account and guessed IDs; verify the backend rejects access. |
+| US-17 Duplicate prevention and failures | Must | Confirm the same command twice and simulate processing failure; verify no duplicate task or false success. |
+| US-18 Notifications | Later | Trigger an assignment or approaching deadline and verify notification content, timing, and access rules. |
+
+The first MVP is planned to implement **Create Task** from the AI action list below. The other seven actions remain planned product requirements and are specified in the API design; their implementation priority will be agreed during the next milestone plan.
+
+## 6. AI actions
+
+The complete product must support these eight actions:
 
 1. Create Task — propose one or more new tasks.
 2. Update Task — propose changes to an existing task.
@@ -60,18 +97,16 @@ The assistant must support:
 Each action must have defined input parameters, a response structure,
 validation rules, and error handling in the API specification.
 
-## 6. Processing flow
+## 7. Processing flow
 
-Voice input → transcription → intent recognition → field extraction
-→ validation → user review and confirmation → backend action
-→ updated Kanban board
+Voice input → transcription and user correction → intent recognition → field extraction → validation and clarification → review of each proposed action → user confirmation → backend action → updated Kanban board
 
-Text commands enter the same flow after the transcription step.
+Text commands enter the same flow after the transcription step. One message may yield several proposed actions, which the user can accept or reject separately.
 
 Search and summary actions read accessible project data.
 Actions that change data require confirmation.
 
-## 7. User stories and acceptance criteria
+## 8. User stories and acceptance criteria
 
 ### US-01 Registration and login
 
@@ -252,7 +287,7 @@ Acceptance criteria:
 - Notifications refer to real, accessible tasks.
 - Notification timing and delivery channels are documented before implementation.
 
-## 8. Quality requirements
+## 9. Quality requirements
 
 - Apply access checks on the backend.
 - Validate AI output before executing actions.
@@ -262,7 +297,7 @@ Acceptance criteria:
 - Display loading, success, empty, and error states clearly.
 - Measure AI accuracy and response time on representative inputs.
 
-## 9. Verification
+## 10. Verification
 
 Prepare at least 30 test cases covering:
 
@@ -282,7 +317,7 @@ Each case must record:
 - Actual result
 - Pass or fail
 
-## 10. Decisions to confirm
+## 11. Decisions to confirm
 
 - Project roles and exact permission rules
 - Supported audio formats and recording-length limits
