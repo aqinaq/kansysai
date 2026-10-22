@@ -1,25 +1,20 @@
 # Intelligent Kanban System with an AI Assistant
 
-A diploma project for generating tasks and meeting summaries from voice messages. The system will transcribe recordings, identify actionable tasks, and let users review the results before adding tasks to a Kanban board.
+A diploma project for managing tasks on a Kanban board through manual actions, voice commands, and text commands. The assistant will propose one or more actions from a message. Users will review and confirm changes before they are saved.
 
 ## Problem and target users
 
-Work instructions, assignments, and meeting decisions are often communicated verbally. Turning these discussions into clear tasks manually takes time, and important details may be missed.
+Work instructions and meeting decisions are often communicated verbally. Recording each task manually takes time, and its owner or deadline may be unclear. One message may contain several assignments.
 
-The intended users include employees, project managers, teachers, and students who need to organize tasks from voice messages and meeting recordings.
+The intended users are employees, project managers, teachers, and students. Three initial user interviews informed the task-review and clarification flows; further prototype testing is planned.
 
-## Expected outcome
+## Project scope
 
-The planned system will let a user:
+The first working MVP is planned to include a persistent Kanban board, manual task management, voice transcription with user correction, and creation of one or more task proposals from voice or text. Users will review each proposal separately. The backend will validate confirmed actions before saving them.
 
-1. Submit a voice message or meeting recording.
-2. View its transcription.
-3. Review one or more suggested tasks, including their titles, descriptions, assignees, and deadlines when provided.
-4. View a summary of the meeting when applicable.
-5. Edit, confirm, or reject the suggested tasks.
-6. Add confirmed tasks to a Kanban board.
+The planned complete product also includes commands for updating existing tasks, task search, project and meeting summaries, comments, history, notifications, and Kazakh, Russian, English, and mixed-language interaction. The [product requirements](docs/product-requirements.md) describe the full scope and proposed MVP priorities.
 
-Task details will remain editable, and tasks will be saved only after user confirmation. Missing assignees or deadlines will not be invented by the system.
+Missing assignees, deadlines, and tasks must not be invented. Ambiguous commands must be clarified, and data-changing actions require user confirmation.
 
 ## Team
 
@@ -27,26 +22,47 @@ Task details will remain editable, and tasks will be saved only after user confi
 - Symbat Saparbay — AI and Backend
 - Supervisor: Alibek Orynbek
 
-Both team members review each other's pull requests and contribute to the project documentation and presentation.
+Both team members contribute to project documentation and review each other's pull requests.
 
 ## Current status
 
-The project is in the analysis and design stage. The repository contains an initial project proposal and a draft literature review. A technology comparison and proposed stack have been submitted for review.
+The project is in the analysis and design stage. This repository contains the proposal, user interviews, product requirements, literature and existing-system reviews, technology comparison, architecture diagrams, database schema, API specification, and an interactive interface prototype.
 
-The next deliverables include user research, finalized requirements, architectural diagrams, and an interface prototype. The project documents will be updated to reflect the latest agreed requirements, including multiple tasks per message and meeting summaries.
+The prototype demonstrates a Kanban board, task editing, multiple task proposals, clarification, and confirmation using sample data. **Voice recording and AI responses are simulated.** Prototype changes are stored in browser memory and reset when the page reloads. A persistent application with real speech recognition and backend AI processing is not available yet.
 
-A complete application is not available yet. The technology choices will be documented after the comparison has been reviewed and agreed upon by the team.
+The prototype evaluation currently documents an internal walkthrough. Testing with independent users is still in progress.
 
 ## Project documents
 
 - [Project proposal](docs/project-proposal.md)
-- [Literature review](docs/research/literature-review.md)
+- [Product requirements and user stories](docs/product-requirements.md)
+- [User interview findings](docs/research/user-interviews.md)
+- [Literature review](docs/be-01/BE01.pdf)
+- [Existing-system comparison](docs/be-02/BE02.pdf)
+- [Technology selection](docs/be-03/BE03.pdf)
+- [System context diagram](docs/be-04/BE04.pdf)
+- [Backend component diagram](docs/be-05/BE05.pdf)
+- [Database schema and API specification](docs/be-06/BE06.pdf)
+- [Use-case overview](docs/diagrams/use-case-diagram.md)
+- [User flows](docs/user-flows.md)
+- [Preliminary prototype evaluation](docs/research/prototype-feedback.md)
+- [Interface screenshots](screenshots/)
 - [YouTrack project](https://ai-kanban-thesis.youtrack.cloud/projects/DEMO)
+
+The diagram and technical-document folders also contain editable source files.
+
+## Proposed technology stack
+
+The [technology comparison](docs/be-03/BE03.pdf) proposes React, TypeScript, and Vite for the frontend; FastAPI for the backend; PostgreSQL for application data; and separate speech-to-text and command-processing services. REST endpoints and WebSocket events are planned for application interaction. These choices are documented designs, not an implemented stack.
+
+## Open the interface prototype
+
+Open [`prototype/index.html`](prototype/index.html) in a modern browser. No installation, API key, or backend is needed. See the [prototype instructions and limitations](prototype/README.md) before demonstrating it.
+
+The prototype uses sample commands and sample board data. It must not be presented as a working speech-recognition or AI implementation.
 
 ## Development workflow
 
-Work is tracked in YouTrack. Each meaningful task has an assignee, a deadline, and acceptance criteria.
+Work is tracked in [YouTrack](https://ai-kanban-thesis.youtrack.cloud/projects/DEMO). Changes are developed in task branches and submitted through GitHub pull requests for teammate review. New branches, commits, and pull requests should reference their YouTrack issue ID. Each completed issue should link to its reviewed deliverable.
 
-Changes are developed in separate Git branches and submitted through pull requests. The other team member reviews each pull request before it is merged into `main`. Branch names, commits, and pull requests reference the relevant YouTrack issue.
-
-Setup, run, and test instructions will be added when the first runnable implementation is available.
+Setup and test instructions for the persistent application will be added when that implementation is available.
