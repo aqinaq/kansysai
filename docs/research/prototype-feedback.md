@@ -60,7 +60,7 @@ The earlier role-based simulated walkthroughs are useful prompts for what to obs
 
 ## Independent participant feedback (21–22 October 2026)
 
-Akbope confirmed that P1, P2, and P3 were three different people outside the diploma team. Each tried the prototype individually and attempted all five tasks. One session took place on 21 October 2026 and two on 22 October 2026; the date-to-participant mapping has not yet been supplied. The notes do not yet confirm whether each participant was told before testing that voice and AI are simulated. These details remain unverified rather than inferred.
+Akbope confirmed that P1, P2, and P3 were three different people outside the diploma team. Each tried the prototype individually and attempted all five tasks. P1 tested on 21 October 2026; P2 and P3 tested on 22 October 2026. Before testing, all three were told that voice input and AI responses were simulated.
 
 Each participant was asked to: (1) find the core screens task on the board; (2) edit its deadline; (3) use the “Several tasks” example and select which proposals to add; (4) resolve the ambiguous diagram task; and (5) resolve an unknown assignee and finish creating the proposed task. “Without help” means the participant completed the task without a facilitator prompt. These were prototype flows with preset assistant responses, not tests of live transcription or AI extraction.
 
@@ -101,4 +101,4 @@ The following are product interpretations of the observations above; the partici
 | 7 | F2 — future-relative sample deadline | The fixed sample date will become stale after 23 October. |
 | 8 | F3 — shared-board explanation | Clarify the prototype shortcut until project-specific boards exist. |
 
-No prototype UI change is included in this evaluation report. The five tasks, outcomes, and improvement priorities provide input for follow-up frontend issues. The three-participant minimum has been met. Record the simulation-disclosure answer and date mapping when confirmed, then complete teammate review and merge the PR before closing DEMO-30.
+No prototype UI change is included in this evaluation report. The five tasks, outcomes, and improvement priorities provide input for follow-up frontend issues. The three-participant minimum has been met. Teammate review and PR merge remain before closing DEMO-30.
