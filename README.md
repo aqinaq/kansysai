@@ -6,7 +6,7 @@ A diploma project for managing tasks on a Kanban board through manual actions, v
 
 Work instructions and meeting decisions are often communicated verbally. Recording each task manually takes time, and its owner or deadline may be unclear. One message may contain several assignments.
 
-The intended users are employees, project managers, teachers, and students. Three initial user interviews informed the task-review and clarification flows; further prototype testing is planned.
+The intended users are employees, project managers, teachers, and students. Three initial user interviews informed the task-review and clarification flows. Three independent participants subsequently tested the prototype.
 
 ## Project scope
 
@@ -15,6 +15,12 @@ The first working MVP is planned to include a persistent Kanban board, manual ta
 The planned complete product also includes commands for updating existing tasks, task search, project and meeting summaries, comments, history, notifications, and Kazakh, Russian, English, and mixed-language interaction. The [product requirements](docs/product-requirements.md) describe the full scope and proposed MVP priorities.
 
 Missing assignees, deadlines, and tasks must not be invented. Ambiguous commands must be clarified, and data-changing actions require user confirmation.
+
+## Expected outcomes
+
+- **First working MVP (planned):** authenticated users can access their workspaces and projects, manage a persistent Kanban board, correct a voice transcript, and create one or several tasks from voice or text. Each proposed task can be edited, selected, or rejected before the backend validates and saves confirmed actions.
+- **Evidence (partly complete):** the project documents its requirements, architecture, data model, API, user flows, interactive prototype, and evaluation plan. The prototype has been tested by three independent participants, with 12 of 15 assigned tasks completed without help in total. These results assess the simulated interface, not speech recognition or AI accuracy.
+- **Verification (planned):** the [verification and evaluation plan](docs/verification-evaluation-plan.md) lists 36 implementation cases and a manual task-entry baseline. Actual results, transcription and extraction measures, response times, and agreed numerical targets will be reported after the working system is available. The expected safety result is zero unconfirmed changes, unauthorized reads or writes, and duplicate actions on retry.
 
 ## Team
 
@@ -30,7 +36,7 @@ The project is in the analysis and design stage. This repository contains the pr
 
 The prototype demonstrates a Kanban board, task editing, multiple task proposals, clarification, and confirmation using sample data. **Voice recording and AI responses are simulated.** Prototype changes are stored in browser memory and reset when the page reloads. A persistent application with real speech recognition and backend AI processing is not available yet.
 
-The prototype evaluation currently documents an internal walkthrough. Testing with independent users is still in progress.
+The [prototype evaluation](docs/research/prototype-feedback.md) documents an internal walkthrough and three independent participant sessions on 21–22 October 2026. Their unassisted task-completion results were 4/5, 5/5, and 3/5. The findings are recorded as follow-up design changes; they have not all been implemented.
 
 ## Project documents
 
@@ -45,7 +51,8 @@ The prototype evaluation currently documents an internal walkthrough. Testing wi
 - [Database schema and API specification](docs/be-06/BE06.pdf)
 - [Use-case overview](docs/diagrams/use-case-diagram.md)
 - [User flows](docs/user-flows.md)
-- [Preliminary prototype evaluation](docs/research/prototype-feedback.md)
+- [Prototype evaluation and participant feedback](docs/research/prototype-feedback.md)
+- [Verification and evaluation plan](docs/verification-evaluation-plan.md)
 - [Interface screenshots](screenshots/)
 - [YouTrack project](https://ai-kanban-thesis.youtrack.cloud/projects/DEMO)
 

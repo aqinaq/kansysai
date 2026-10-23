@@ -1,7 +1,8 @@
 # Product Verification and Evaluation Plan
 
 **Issue:** DEMO-34
-**Status:** Draft for team review  
+**Status:** Reviewed in [PR #24](https://github.com/aqinaq/kansysai/pull/24); implementation verification not run
+
 **Owners:** Akbope Bakytkeldy (product and frontend); Symbat Saparbay (backend and AI)
 
 ## 1. Purpose
@@ -14,7 +15,7 @@ A planned test is not an achieved result. Each implementation test below has the
 
 The FE-04 browser prototype uses preset assistant responses and simulated voice input. It does not test live speech recognition, AI extraction, a persistent backend, or production permissions.
 
-Three independent participants tested the prototype individually on 21–22 October 2026. All were told that voice and AI were simulated and attempted the same five tasks. Tasks completed without help were P1 **4/5**, P2 **5/5**, and P3 **3/5**. The observations, assistance notes, and proposed improvements are in the [FE-07 evaluation report](https://github.com/aqinaq/kansysai/pull/23). These are prototype usability results, not results for the full application.
+Three independent testers took part individually on 21–22 October 2026. All were told that voice and AI were simulated and attempted the same five tasks. Tasks completed without help were T1 **4/5**, T2 **5/5**, and T3 **3/5**. The observations, assistance notes, and proposed improvements are in the [FE-07 evaluation report](research/prototype-feedback.md). These are prototype usability results, not results for the full application.
 
 ## 3. Responsibilities
 
