@@ -1,0 +1,389 @@
+% BE-05: Backend Component Diagram — compile with XeLaTeX
+\documentclass[11pt,a4paper]{article}
+
+% ---------- language and fonts ----------
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{english}
+\IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}}{%
+  \IfFontExistsTF{Liberation Serif}{\setmainfont{Liberation Serif}}{\setmainfont{DejaVu Serif}}}
+\IfFontExistsTF{Arial}{\setsansfont{Arial}}{%
+  \IfFontExistsTF{Liberation Sans}{\setsansfont{Liberation Sans}}{\setsansfont{DejaVu Sans}}}
+\IfFontExistsTF{Consolas}{\setmonofont[Scale=0.9]{Consolas}}{\setmonofont[Scale=0.85]{DejaVu Sans Mono}}
+
+% ---------- layout ----------
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{microtype}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{xltabular}
+\usepackage{enumitem}
+\usepackage[table]{xcolor}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{fancyvrb}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,fit,backgrounds,calc}
+\usepackage{xurl}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+
+\setlist{itemsep=2pt,topsep=4pt}
+\setlength{\parskip}{4pt}
+\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{3em}
+\renewcommand{\arraystretch}{1.25}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\tblstart}{\small\rowcolors{2}{gray!7}{white}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+% colours (C4-style)
+\definecolor{c4person}{HTML}{08427B}
+\definecolor{c4cont}{HTML}{438DD5}
+\definecolor{c4comp}{HTML}{85BBF0}
+\definecolor{c4ext}{HTML}{8A8A8A}
+\definecolor{c4db}{HTML}{2E6DA4}
+
+\title{\textbf{BE-05: Backend Component Diagram}\\[4pt]
+\large Intelligent Kanban System with an AI Assistant}
+\author{Symbat Saparbay | Akbope Bakytkeldy\\ \small YouTrack: DEMO-24}
+\date{}
+
+\begin{document}
+\maketitle
+
+% =====================================================
+\section{Purpose}
+
+\begin{itemize}
+  \item the \textbf{containers} that make up the system (C4 level 2);
+  \item the \textbf{components} inside the backend API and the AI worker (C4 level 3);
+  \item how the components work together in the key scenarios;
+  \item the life cycle of an AI command and how the components map to code modules.
+\end{itemize}
+Technology choices are taken from BE-03 (DEMO-22).
+
+% =====================================================
+\section{Container Diagram (C4 Level 2)}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  scale=0.9, transform shape,
+  font=\small,
+  person/.style={draw=c4person, fill=c4person, text=white, rounded corners=8pt, align=center, text width=3.4cm, minimum height=1.1cm},
+  cont/.style={draw=c4cont!70!black, fill=c4cont, text=white, rounded corners=4pt, align=center, text width=3.4cm, minimum height=1.45cm, inner sep=4pt},
+  db/.style={draw=c4db!70!black, fill=c4db, text=white, rounded corners=10pt, align=center, text width=2.7cm, minimum height=1.25cm, inner sep=3pt},
+  ext/.style={draw=c4ext, fill=c4ext, text=white, rounded corners=4pt, align=center, text width=2.9cm, minimum height=1.2cm, inner sep=3pt},
+  extopt/.style={ext, dashed, draw=c4ext!80!black, fill=c4ext!25, text=black!85},
+  arr/.style={-{Stealth[length=2mm]}, thick, draw=gray!60!black},
+  tag/.style={font=\scriptsize, fill=white, inner sep=1.5pt, align=center},
+  bound/.style={draw=gray!70, dashed, rounded corners=8pt, inner sep=10pt}
+]
+\node[person] (user) at (0,4.3) {\textbf{User}\\{\footnotesize web browser}};
+
+\node[cont] (spa)    at (0,2.1)     {\textbf{Web App}\\{\footnotesize React, TypeScript}};
+\node[cont] (api)    at (0,-0.4)    {\textbf{API Server}\\{\footnotesize FastAPI, REST + WebSocket}};
+\node[cont] (worker) at (5.4,-0.4)  {\textbf{AI Worker}\\{\footnotesize Python, ARQ/Celery, Whisper}};
+\node[cont] (ollama) at (5.4,2.1)   {\textbf{Local LLM}\\{\footnotesize Ollama (Qwen 3 / KazLLM)}};
+
+\node[db] (pg)    at (-4.6,-3.0) {\textbf{PostgreSQL}\\{\footnotesize business data, audit}};
+\node[db] (redis) at (0,-3.0)    {\textbf{Redis}\\{\footnotesize jobs, pub/sub, keys}};
+\node[db] (minio) at (5.4,-3.0)  {\textbf{MinIO}\\{\footnotesize voice files}};
+
+\node[ext]    (llm)  at (10.0,2.1)  {\textbf{Cloud LLM API}};
+\node[extopt] (stt)  at (10.0,-0.4) {\textbf{Cloud STT}\\{\footnotesize optional}};
+\node[ext]    (smtp) at (-4.6,-0.4) {\textbf{SMTP}};
+
+\begin{scope}[on background layer]
+\node[bound, fit=(spa)(api)(worker)(ollama)(pg)(redis)(minio), label={[font=\footnotesize\bfseries, text=gray!70!black]above right:Intelligent Kanban System}] {};
+\end{scope}
+
+\draw[arr] (user) -- node[tag, right=2pt]{HTTPS} (spa);
+\draw[arr, <->] (spa) -- node[tag, right=2pt]{REST / WSS, JSON} (api);
+\draw[arr, <->] (api) -- node[tag, right=2pt]{SQL} ($(api.south)!0.5!(redis.north)$) -| (pg.north);
+\draw[arr, <->] (api) -- node[tag, right=2pt, pos=0.65]{jobs, events} (redis);
+\draw[arr, <->] (worker) |- node[tag, pos=0.25, right=2pt]{jobs} (redis.east);
+\draw[arr] (api.east) -- node[tag, above=1pt]{upload audio} ++(1.0,0) |- ($(minio.north)+(-0.6,0.5)$) -- ($(minio.north)+(-0.6,0)$);
+\draw[arr] (worker) -- node[tag, right=2pt]{read audio} (minio);
+\draw[arr, <->] (worker) -- node[tag, right=2pt]{private mode} (ollama);
+\draw[arr, <->] (worker.north east) -- node[tag, sloped, above=1pt]{default} (llm.south west);
+\draw[arr, <->, dashed] (worker.east) -- node[tag, below=2pt]{fallback} (stt.west);
+\draw[arr] (api.west) -- node[tag, above=1pt]{emails} (smtp.east);
+\end{tikzpicture}
+\caption{Containers of the system. Only the API Server writes business data; the AI Worker produces transcripts and action plans.}
+\end{figure}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{2.6cm} P{3.6cm} L}
+\toprule
+\textbf{Container} & \textbf{Technology} & \textbf{Responsibility} \\
+\midrule
+\endhead
+Web App & React, TypeScript, Vite, dnd-kit, TanStack Query & Kanban UI, voice recording, preview and confirmation of AI actions, real-time updates \\
+API Server & Python 3.12, FastAPI, SQLAlchemy 2.0 & Authentication, access control, all business logic and data changes, AI command validation and execution, WebSocket events \\
+AI Worker & Python, ARQ/Celery, faster-whisper, transformers & Speech-to-text with language routing, command parsing with an LLM, periodic jobs (reminders, email, retention clean-up) \\
+Local LLM & Ollama with Qwen 3 or KazLLM 8B & Command parsing in private mode and as a fallback \\
+PostgreSQL & PostgreSQL 16, pg\_trgm & Users, workspaces, projects, boards, tasks, comments, history, AI commands, audit log \\
+Redis & Redis 7 & Job queue, pub/sub for WebSocket fan-out, idempotency keys, rate limits \\
+MinIO & S3-compatible storage & Encrypted voice files with a retention period \\
+\bottomrule
+\end{xltabular}}
+
+% =====================================================
+\section{Backend Components (C4 Level 3)}
+
+The API Server follows a layered structure: \textbf{routers} handle HTTP and WebSocket, \textbf{services} contain business rules, \textbf{repositories and clients} access storage. The AI Worker has its own components but writes results only through the AI command records, never directly into tasks.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  font=\footnotesize,
+  comp/.style={draw=c4cont!70!black, fill=c4comp!45, rounded corners=3pt, align=center, text width=2.6cm, minimum height=0.95cm, inner sep=2pt},
+  key/.style={comp, fill=c4comp, very thick},
+  infra/.style={draw=c4db!70!black, fill=c4db!15, rounded corners=3pt, align=center, text width=2.55cm, minimum height=0.85cm, inner sep=2pt},
+  layer/.style={draw=gray!60, rounded corners=5pt, inner sep=5pt},
+  lbl/.style={font=\scriptsize\bfseries, text=gray!70!black},
+  arr/.style={-{Stealth[length=2mm]}, very thick, draw=gray!55!black}
+]
+% ---- API server: routers ----
+\node[comp] (r1) at (0,0)     {\textbf{Auth router}\\\code{/auth}};
+\node[comp] (r2) at (2.85,0)  {\textbf{Workspace \& project routers}};
+\node[comp] (r3) at (5.7,0)   {\textbf{Task \&}\\\textbf{comment routers}};
+\node[comp] (r4) at (8.55,0)  {\textbf{Voice \& AI command router}};
+\node[comp] (r5) at (11.4,0)  {\textbf{WebSocket gateway}\\\code{/ws}};
+
+% ---- services ----
+\node[comp] (s1) at (0,-1.75)    {\textbf{Auth service}\\JWT, Argon2};
+\node[key]  (s2) at (2.85,-1.75) {\textbf{Access control}\\RBAC policy};
+\node[comp] (s3) at (5.7,-1.75)  {\textbf{Workspace, project,}\\\textbf{board services}};
+\node[comp] (s4) at (8.55,-1.75) {\textbf{Task service}\\+ comments};
+\node[comp] (s5) at (11.4,-1.75) {\textbf{Notification service}};
+
+\node[key]  (s6) at (1.425,-3.35) {\textbf{AI command}\\\textbf{service}\\states, confirm};
+\node[comp] (s7) at (4.275,-3.35) {\textbf{Resolvers}\\member, task, date};
+\node[comp] (s8) at (7.125,-3.35) {\textbf{Query service}\\search, summary};
+\node[comp] (s9) at (9.975,-3.35) {\textbf{History \& audit service}};
+
+% ---- infrastructure ----
+\node[infra] (i1) at (0,-5.0)    {Repositories\\(SQLAlchemy)};
+\node[infra] (i2) at (2.85,-5.0) {Voice storage client\\(MinIO)};
+\node[infra] (i3) at (5.7,-5.0)  {Job queue client\\(Redis)};
+\node[infra] (i4) at (8.55,-5.0) {Event bus\\(Redis pub/sub)};
+\node[infra] (i5) at (11.4,-5.0) {Email client\\(SMTP)};
+
+\begin{scope}[on background layer]
+\node[layer, fill=blue!3,  fit=(r1)(r5), label={[lbl]left:\rotatebox{90}{Routers}}] (Lr) {};
+\node[layer, fill=green!4, fit=(s1)(s5)(s6)(s9), label={[lbl]left:\rotatebox{90}{Services}}] (Ls) {};
+\node[layer, fill=gray!6,  fit=(i1)(i5), label={[lbl]left:\rotatebox{90}{Infrastructure}}] (Li) {};
+\node[draw=c4cont!70!black, dashed, rounded corners=8pt, inner sep=8pt, fit=(Lr)(Ls)(Li), label={[font=\small\bfseries, text=c4cont!60!black]above:API Server (FastAPI)}] (apibox) {};
+\end{scope}
+
+\draw[arr] (Lr.south) -- (Ls.north);
+\draw[arr] (Ls.south) -- (Li.south |- Ls.south) -- (Li.north);
+
+% ---- AI worker ----
+\node[comp] (w1) at (3.0,-7.3)  {\textbf{Job handlers}\\transcribe, parse};
+\node[comp] (w2) at (6.0,-7.3)  {\textbf{STT router}\\language detection};
+\node[comp] (w3) at (9.0,-7.3)  {\textbf{Command parser}\\cloud LLM / Ollama};
+\node[comp] (w4) at (3.0,-8.75) {\textbf{Scheduled jobs}\\reminders, retention};
+\node[comp] (w5) at (6.0,-8.75) {\textbf{Whisper models}\\base + Kazakh};
+\node[comp] (w6) at (9.0,-8.75) {\textbf{Prompt \& schema}\\JSON action plan};
+\begin{scope}[on background layer]
+\node[draw=orange!60!black, dashed, rounded corners=8pt, inner sep=8pt, fill=orange!5, fit=(w1)(w6), label={[font=\small\bfseries, text=orange!50!black]below:AI Worker}] (wbox) {};
+\end{scope}
+\draw[-{Stealth[length=1.6mm]}, thick, draw=gray!55!black] (w1) -- (w2);
+\draw[-{Stealth[length=1.6mm]}, thick, draw=gray!55!black] (w2) -- (w3);
+\draw[-{Stealth[length=1.6mm]}, thick, draw=gray!55!black] (w2) -- (w5);
+\draw[-{Stealth[length=1.6mm]}, thick, draw=gray!55!black] (w3) -- (w6);
+
+\draw[arr, <->] (i3.south) -- node[fill=white, font=\scriptsize, inner sep=1.5pt]{jobs / results} (i3.south |- wbox.north);
+\end{tikzpicture}
+\caption{Components of the API Server and the AI Worker. Thick boxes are the components that enforce the ``AI only proposes'' rule.}
+\end{figure}
+
+\subsection{Component Responsibilities}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{3.3cm} L P{3.6cm}}
+\toprule
+\textbf{Component} & \textbf{Responsibility} & \textbf{Depends on} \\
+\midrule
+\endhead
+\multicolumn{3}{l}{\cellcolor{white}\textbf{API Server — routers}} \\
+Auth router & Register, log in, refresh and revoke tokens & Auth service \\
+Workspace \& project routers & CRUD for workspaces, projects, boards, columns; membership and roles & Access control, workspace/project/board services \\
+Task \& comment routers & CRUD for tasks, moving between columns, comments, task history & Access control, task service, history \\
+Voice \& AI command router & Upload audio or text command, edit transcript, view proposed plan, confirm or reject, poll status & AI command service \\
+WebSocket gateway & Authenticated connection per user; pushes board changes, AI command status and notifications & Event bus, access control \\
+\midrule
+\multicolumn{3}{l}{\cellcolor{white}\textbf{API Server — services}} \\
+Auth service & Password hashing (Argon2), JWT issue and validation, refresh-token rotation & User repository \\
+Access control & One place for permission rules: workspace roles (owner, admin, member) and project roles (manager, member, viewer); used by every service, including AI actions & Membership repository \\
+Workspace / project / board services & Business rules for workspaces, projects, boards and columns, member invitations & Repositories, access control \\
+Task service & Create, update, delete, assign, change status, deadline and priority; column order; comments. The \textbf{same methods} serve manual UI actions and confirmed AI actions & Repositories, access control, history, notifications, event bus \\
+Notification service & Builds in-app and email notifications from domain events; respects user preferences & Event bus, email job \\
+AI command service & Creates AI commands, stores transcripts and plans, runs the state machine (Section~\ref{sec:states}), validates plans with Pydantic, executes confirmed actions through the task service, guarantees idempotent confirmation & Resolvers, task service, query service, job queue \\
+Resolvers & Turn mentions into IDs: \textbf{member resolver} (Kazakh case endings, transliteration, fuzzy match), \textbf{task resolver} (pg\_trgm over accessible tasks), \textbf{date resolver} (relative dates in the user's time zone). Never invent values: no match or several matches become a clarification & Repositories \\
+Query service & Executes Search Tasks and Project Summary as database queries built from the LLM filter; returns only accessible records & Repositories, access control \\
+History \& audit service & Writes \code{task\_history} (field, old value, new value, author, source UI/AI) and \code{audit\_log} & Repositories \\
+\midrule
+\multicolumn{3}{l}{\cellcolor{white}\textbf{API Server — infrastructure}} \\
+Repositories & SQLAlchemy data access, transactions & PostgreSQL \\
+Voice storage client & Upload, presigned URLs, deletion & MinIO \\
+Job queue client & Enqueue jobs, receive results & Redis \\
+Event bus & Publish domain events, fan-out to WebSocket gateways on all instances & Redis pub/sub \\
+Email client & Send emails with retries & SMTP \\
+\midrule
+\multicolumn{3}{l}{\cellcolor{white}\textbf{AI Worker}} \\
+Job handlers & \code{transcribe(command\_id)}, \code{parse(command\_id)}; update the AI command record with results or errors & STT router, command parser \\
+STT router & Language detection restricted to kk/ru/en; routing to the Kazakh or base model (kk top or $p(\mathrm{kk}) \ge 0.30$); user hint overrides detection & Whisper models, cloud STT (fallback) \\
+Command parser & Single \code{CommandParser} interface with two providers (cloud LLM, Ollama); returns a JSON action plan & Prompt \& schema, LLM providers \\
+Prompt \& schema & System prompt, list of the eight actions, JSON Schema of the plan, context (member names, today's date, time zone) & — \\
+Scheduled jobs & Deadline reminders every 15 minutes, email sending, deletion of voice files after the retention period & Repositories, voice storage, email client \\
+\bottomrule
+\end{xltabular}}
+
+% =====================================================
+\section{AI Command Life Cycle}\label{sec:states}
+
+Each voice or text command is stored as an \code{ai\_commands} record. Its status changes only through the AI command service.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  scale=0.95, transform shape,
+  font=\small,
+  st/.style={draw=c4cont!70!black, fill=c4comp!40, rounded corners=8pt, minimum height=0.8cm, minimum width=2.2cm, align=center},
+  fin/.style={st, fill=green!15, draw=green!40!black},
+  bad/.style={st, fill=red!10, draw=red!50!black},
+  arr/.style={-{Stealth[length=2mm]}, thick, draw=gray!55!black},
+  tag/.style={font=\scriptsize, fill=white, inner sep=1.5pt, align=center}
+]
+\node[st]  (up)   at (0,0)     {uploaded};
+\node[st]  (tr)   at (4.1,0)   {transcribed};
+\node[st]  (pr)   at (8.2,0)   {proposed};
+\node[st]  (cf)   at (12.3,0)  {confirmed};
+\node[fin] (ex)   at (12.3,-2.0) {executed};
+\node[bad] (rj)   at (8.2,-2.0) {rejected};
+\node[bad] (fl)   at (4.1,-2.0) {failed};
+\node[st]  (cl)   at (8.2,2.1) {needs clarification};
+
+\draw[arr] (up) -- node[tag, above=2pt]{STT} (tr);
+\draw[arr] (tr) -- node[tag, above=2pt]{LLM + validation} (pr);
+\draw[arr] (pr) -- node[tag, above=2pt]{user confirms} (cf);
+\draw[arr] (cf) -- node[tag, right=2pt]{task service} (ex);
+\draw[arr] (pr) -- node[tag, right=2pt]{user rejects} (rj);
+\draw[arr] (pr) to[bend left=20] node[tag, left=2pt]{ambiguous} (cl);
+\draw[arr] (cl) to[bend left=20] node[tag, right=2pt]{user answers} (pr);
+\draw[arr] (tr) to[loop above, looseness=4] node[tag, above=1pt]{user edits transcript} (tr);
+\draw[arr] (up) |- node[tag, pos=0.25, left=2pt]{error} (fl);
+\draw[arr] (tr) -- node[tag, right=2pt]{error} (fl);
+\end{tikzpicture}
+\caption{States of an AI command. Data changes happen only on the transition \textit{confirmed} $\rightarrow$ \textit{executed}.}
+\end{figure}
+
+\begin{itemize}
+  \item \textbf{Idempotency.} \code{POST /ai-commands/\{id\}/confirm} moves \textit{proposed} $\rightarrow$ \textit{confirmed} in one database transaction with a row lock. A repeated request on a \textit{confirmed} or \textit{executed} command returns the existing result and creates nothing.
+  \item \textbf{Partial confirmation.} For a plan with several tasks (meeting summary, several assignments), the user can accept, edit or reject each action; only accepted actions are executed.
+  \item \textbf{Errors.} STT or LLM failures move the command to \textit{failed} with a readable reason; the user can retry or type the command manually.
+  \item \textbf{Expiry.} Proposed commands that are not confirmed within 24 hours are marked as rejected, so an old plan cannot be executed on changed data.
+\end{itemize}
+
+% =====================================================
+\section{Key Scenarios}
+
+\subsection{Create a Task by Voice (Case 1)}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{0.6cm} P{3.2cm} L}
+\toprule
+\textbf{\#} & \textbf{Component} & \textbf{Action} \\
+\midrule
+\endhead
+1 & Web App & Records audio and sends it with the current project ID to \code{POST /voice-commands} \\
+2 & Voice \& AI command router & Checks that the user is a member of the project (access control) \\
+3 & AI command service & Saves audio through the voice storage client, creates an AI command (\textit{uploaded}), enqueues \code{transcribe} \\
+4 & AI Worker: STT router & Detects the language, routes to the Kazakh or base model, stores the transcript (\textit{transcribed}) \\
+5 & Web App & Shows the transcript; the user can correct it \\
+6 & AI Worker: command parser & Sends the transcript, project member names, date and time zone to the LLM; receives the JSON plan \\
+7 & AI command service & Validates the plan with Pydantic; resolvers map ``Данияр'' to a project member and ``до пятницы'' to a date; unresolved fields are flagged (\textit{proposed} or \textit{needs clarification}) \\
+8 & Web App & Shows the preview card via WebSocket; the user edits fields and confirms \\
+9 & AI command service & Idempotent confirm, then calls the task service \\
+10 & Task service & Creates the task with permission checks, writes history and audit, publishes \code{task.created} \\
+11 & WebSocket gateway, notification service & Board updates for all members; the assignee receives an in-app and email notification \\
+\bottomrule
+\end{xltabular}}
+
+\subsection{Update or Change Status of an Existing Task (Cases 3, 4)}
+
+The command parser returns an \code{update\_task} or \code{change\_status} action with a \textit{description} of the task. The task resolver searches accessible tasks (pg\_trgm on titles): one match goes to the preview, several matches produce a list to choose from, no match produces ``task not found''. After confirmation the same task service methods as in the UI are used.
+
+\subsection{Search Tasks and Project Summary (Case 5)}
+
+The LLM returns only a filter, for example \code{\{status: not done, deadline\_before: today\}}. The query service runs the query on records accessible to the user and returns real rows. For a summary, only these rows are passed to the LLM for wording, and every task in the answer links to a real task ID. These actions do not change data and need no confirmation.
+
+\subsection{Deadline Reminders}
+
+A scheduled job in the AI Worker runs every 15 minutes, selects tasks due within 24 hours or overdue that have not been notified yet, and publishes events; the notification service creates in-app notifications and enqueues emails.
+
+% =====================================================
+\section{Code Structure}
+
+Components map directly to Python packages of the backend repository:
+
+\begin{Verbatim}[fontsize=\small,frame=single,framesep=6pt,rulecolor=\color{gray!50}]
+backend/
+  app/
+    main.py                 # FastAPI app, routers, middleware
+    core/                   # config, security (JWT, Argon2), errors
+    api/                    # routers: auth, workspaces, projects,
+                            #   boards, tasks, comments, ai_commands, ws
+    services/               # auth, access_control, workspaces, projects,
+                            #   boards, tasks, notifications, history_audit,
+                            #   query, ai_commands
+    ai/
+      resolvers/            # member, task, date
+      schemas.py            # Pydantic models of the 8 actions and the plan
+    repositories/           # SQLAlchemy repositories
+    models/                 # SQLAlchemy models
+    infra/                  # minio, redis queue, event bus, email
+  worker/
+    jobs/                   # transcribe, parse, reminders, retention, email
+    stt/                    # STT router, Whisper wrappers
+    llm/                    # CommandParser, cloud and Ollama providers, prompt
+  migrations/               # Alembic
+  tests/                    # unit, API, AI scenarios
+\end{Verbatim}
+
+The \code{ai/schemas.py} module is shared by the API Server and the AI Worker, so the plan format is defined once.
+
+% =====================================================
+\section{Cross-Cutting Rules}
+
+{\tblstart
+\begin{xltabular}{\textwidth}{P{3.6cm} L}
+\toprule
+\textbf{Rule} & \textbf{Implementation} \\
+\midrule
+\endhead
+AI only proposes & The AI Worker has no access to task tables; it writes only transcripts and plans to \code{ai\_commands}. Data changes go through the task service after confirmation \\
+One permission model & Every router and service calls access control; AI actions run with the permissions of the user who confirmed them \\
+Transactions & Each confirmed action (task change, history, audit, outbox event) is saved in one transaction \\
+Error handling & Typed domain errors mapped to HTTP codes (400 validation, 403 forbidden, 404 not found, 409 conflict, 503 AI unavailable) with a readable message \\
+Configuration & LLM provider, STT fallback, Kazakh threshold, retention period and reminder interval are environment settings, not code \\
+Observability & Structured logs with command ID; timings of STT and LLM steps are stored with each AI command for the benchmark and the test cases \\
+\bottomrule
+\end{xltabular}}
+
+% =====================================================
+\section{Related Documents}
+
+\begin{itemize}
+  \item \textbf{BE-03 (DEMO-22)}: technology selection.
+  \item \textbf{BE-04 (DEMO-23)}: system context diagram.
+  \item \textbf{Product requirements and user stories}: AI actions and acceptance criteria that these components implement.
+  \item Next: Database Schema and API Specification, based on the components and the AI command life cycle described here.
+\end{itemize}
+
+\end{document}
