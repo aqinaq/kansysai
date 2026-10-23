@@ -188,6 +188,8 @@ Scaling & GPU workers & GPU workers & Managed & Managed \\
 
 The 0.30 threshold is a starting value; it is a parameter tuned with the benchmark. The benchmark (\code{benchmarks/stt\_benchmark.py}) evaluates multilingual models separately in two modes: \textbf{auto} (automatic language detection, the main product scenario) and \textbf{hint} (language selected by the user). For auto mode it also reports language-detection accuracy and how mixed recordings are routed. The final Kazakh model is chosen from the benchmark results.
 
+\textbf{Current status (23 October 2026).} The benchmark script and its unit tests are implemented, but the benchmark has \emph{not been run yet}: the recording folders in \code{benchmarks/data/} are still empty. The figures in the comparison table above come from published studies, model cards and vendor documentation [1--3, 7], not from our own measurements. The STT decision is therefore \emph{provisional}; it will be confirmed or revised once our own kk/ru/en/mixed recordings have been collected and evaluated.
+
 \textbf{Rationale.} Voice is the most sensitive data in the system. Self-hosted STT addresses privacy and keeps costs flat as the number of users grows, while the fine-tuned model compensates for Whisper's weakness in Kazakh. The cloud fallback improves reliability (R8).
 
 % =====================================================
@@ -441,7 +443,7 @@ LLM comparison & Cloud and local models on the same set & Confirms Section~\ref{
 \bottomrule
 \end{xltabular}}
 
-Results are stored in \code{benchmarks/results/} and summarised in this document.
+Results are stored in \code{benchmarks/results/} and summarised in this document. As of 23 October 2026 no results have been recorded: the recording set is still being collected, and the AI evaluation scenarios will be run once the command-parsing service is implemented. All thresholds except the 5~s latency target will be agreed with the supervisor before results are judged.
 
 % =====================================================
 \section{Risks}
