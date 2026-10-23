@@ -1,12 +1,16 @@
 % References for the DEMO-20 literature review.
-% Entries marked "TODO verify" still need bibliographic checking before final submission.
+% Bibliographic metadata checked against publisher pages, DOI records or proceedings on 23 October 2026.
 
-@article{lekkala2026autonomous,
-  author  = {Lekkala, H. B. and Bandari, V.},
-  title   = {Autonomous Workflow Optimization Using Multi Agent {AI} Systems: {AI} Agents Manage Stations, {WIP}, and Task Handoffs},
-  year    = {2026},
-  doi     = {10.46121/pspc.54.2.08},
-  comment    = {TODO verify: venue and bibliographic metadata}
+% ---------- Type 1: broad searches ----------
+
+@article{ahmad2018kanban,
+  author  = {Ahmad, M. O. and Dennehy, D. and Conboy, K. and Oivo, M.},
+  title   = {Kanban in Software Engineering: A Systematic Mapping Study},
+  journal = {Journal of Systems and Software},
+  volume  = {137},
+  pages   = {96--113},
+  year    = {2018},
+  doi     = {10.1016/j.jss.2017.11.045}
 }
 
 @article{adebanjo2026taskwise,
@@ -25,10 +29,13 @@
   title   = {Smart Project Management: Interactive Platform Using Natural Language Processing Technology},
   journal = {Applied Sciences},
   volume  = {11},
+  number  = {4},
   pages   = {1597},
   year    = {2021},
   doi     = {10.3390/app11041597}
 }
+
+% ---------- Type 2: narrow searches ----------
 
 @article{weld2022survey,
   author  = {Weld, H. and Huang, X. and Long, S. and Poon, J. and Han, S. C.},
@@ -41,32 +48,62 @@
   doi     = {10.1145/3547138}
 }
 
+@inproceedings{baevski2020wav2vec,
+  author    = {Baevski, A. and Zhou, Y. and Mohamed, A. and Auli, M.},
+  title     = {wav2vec 2.0: A Framework for Self-Supervised Learning of Speech Representations},
+  booktitle = {Advances in Neural Information Processing Systems 33 ({NeurIPS} 2020)},
+  pages     = {12449--12460},
+  year      = {2020},
+  url       = {https://proceedings.neurips.cc/paper/2020/hash/92d1e1eb1cd6f9fba3227870bb6d7f07-Abstract.html}
+}
+
+@inproceedings{radford2023whisper,
+  author    = {Radford, A. and Kim, J. W. and Xu, T. and Brockman, G. and McLeavey, C. and Sutskever, I.},
+  title     = {Robust Speech Recognition via Large-Scale Weak Supervision},
+  booktitle = {Proceedings of the 40th International Conference on Machine Learning ({ICML} 2023)},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {202},
+  pages     = {28492--28518},
+  year      = {2023},
+  url       = {https://proceedings.mlr.press/v202/radford23a.html}
+}
+
+@inproceedings{mussakhojayeva2022ksc2,
+  author    = {Mussakhojayeva, S. and Khassanov, Y. and Varol, H. A.},
+  title     = {{KSC2}: An Industrial-Scale Open-Source {Kazakh} Speech Corpus},
+  booktitle = {Proceedings of Interspeech 2022},
+  pages     = {1367--1371},
+  year      = {2022},
+  doi       = {10.21437/Interspeech.2022-421}
+}
+
 @article{kozhirbayev2023kazakh,
   author  = {Kozhirbayev, Z.},
   title   = {Kazakh Speech Recognition: Wav2vec2.0 vs. {Whisper}},
   journal = {Journal of Advances in Information Technology},
   volume  = {14},
   number  = {6},
+  pages   = {1382--1389},
   year    = {2023},
-  comment    = {TODO verify: page range and DOI}
+  doi     = {10.12720/jait.14.6.1382-1389}
 }
 
 @inproceedings{si2023spokenwoz,
   author    = {Si, S. and Ma, W. and Gao, H. and Wu, Y. and Lin, T.-E. and Dai, Y. and Li, H. and Yan, R. and Huang, F. and Li, Y.},
   title     = {{SpokenWOZ}: A Large-Scale Speech-Text Benchmark for Spoken Task-Oriented Dialogue Agents},
-  booktitle = {Advances in Neural Information Processing Systems ({NeurIPS} 2023), Datasets and Benchmarks Track},
+  booktitle = {Advances in Neural Information Processing Systems 36 ({NeurIPS} 2023), Datasets and Benchmarks Track},
   year      = {2023},
   url       = {https://spokenwoz.github.io/SpokenWOZ-github.io/}
 }
 
-@article{tanaka2025multiagent,
-  author  = {Tanaka, H. and Thompson, G.},
-  title   = {Multi-Agent Systems for Action Item Extraction from Meeting Transcripts: A Comprehensive Review},
-  journal = {Scientific Research Journal of Science, Engineering and Technology},
-  volume  = {3},
-  number  = {2},
-  year    = {2025},
-  comment    = {TODO verify: venue, pagination and peer-review status}
+@inproceedings{golia2023action,
+  author    = {Golia, L. and Kalita, J.},
+  title     = {Action-Item-Driven Summarization of Long Meeting Transcripts},
+  booktitle = {Proceedings of the 7th International Conference on Natural Language Processing and Information Retrieval ({NLPIR} 2023)},
+  address   = {Seoul, Republic of Korea},
+  publisher = {ACM},
+  year      = {2023},
+  doi       = {10.1145/3639233.3639253}
 }
 
 @inproceedings{sun2024speech,
@@ -84,8 +121,10 @@
   booktitle = {Findings of the Association for Computational Linguistics: {EMNLP} 2024},
   pages     = {5133--5148},
   year      = {2024},
-  comment      = {TODO verify: ACL Anthology identifier}
+  url       = {https://aclanthology.org/2024.findings-emnlp.295/}
 }
+
+% ---------- Type 3: adjacent solutions ----------
 
 @inproceedings{mok2024llm,
   author    = {Mok, J. and Kachuee, M. and Dai, S. and Ray, S. and Taghavi, T. and Yoon, S.},
@@ -96,21 +135,10 @@
   url       = {https://aclanthology.org/2024.naacl-industry.36/}
 }
 
-@article{pal2023nlp,
-  author  = {Pal, M.},
-  title   = {Natural Language Processing and Speech Recognition},
-  journal = {Excel International Journal of Technology, Engineering and Management},
-  volume  = {10},
-  number  = {1},
-  pages   = {32--38},
-  year    = {2023},
-  comment    = {TODO verify: journal metadata and peer-review status}
-}
-
 @inproceedings{hoang2026structured,
-  author    = {Hoang, T.},
+  author    = {Hoang, T. T.},
   title     = {Structured Hallucination in Tool-Using Agents: Measuring and Mitigating {LLM} Synthesis Corruption in Production},
   booktitle = {Second Workshop on Agents in the Wild ({AIWILD}) at {ICML} 2026},
   year      = {2026},
-  comment      = {TODO verify: final proceedings URL}
+  url       = {https://openreview.net/forum?id=CaJudGHxoR}
 }

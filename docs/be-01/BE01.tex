@@ -56,23 +56,25 @@ The literature is structured according to the three search techniques the team u
 
 The team used three kinds of queries:
 \begin{itemize}
-  \item \textbf{Type 1 -- Broad terms:} AI-assisted task management, NLP-based project management, autonomous workflow optimization.
-  \item \textbf{Type 2 -- Narrow terms or methods:} ASR in Kazakh, spoken task-oriented dialogue, intent detection, slot filling, action-item extraction in meetings, structured LLM output.
-  \item \textbf{Type 3 -- Related terms and contradictions:} API argument filling, speech--NLP integration, structured hallucinations.
+  \item \textbf{Type 1 -- Broad terms:} Kanban in software and project work, AI-assisted task management, NLP-based project management.
+  \item \textbf{Type 2 -- Narrow terms or methods:} self-supervised and large-scale ASR, Kazakh speech corpora and ASR, spoken task-oriented dialogue, intent detection, slot filling, action-item extraction in meetings, structured LLM output.
+  \item \textbf{Type 3 -- Related terms and contradictions:} API argument filling, structured hallucinations.
 \end{itemize}
 
-\textbf{Filtering strategy.} Twelve PDFs collected by the team were filtered by research problem, proposed method, reported results, limitations and possible application in our project. This is a narrative, not a systematic, literature review. The selected materials cover research published between 2021 and 2026; the bibliographic metadata of some publications still requires verification.
+\textbf{Filtering strategy.} Candidate publications were filtered by research problem, proposed method, reported results, limitations and possible application in our project. This is a narrative, not a systematic, literature review. Fourteen sources were retained.
+
+\textbf{Source quality and recency.} Bibliographic metadata of every retained source was checked against the publisher page, DOI record or proceedings on 23 October 2026. Three sources from the first draft were removed because their venue or publication record could not be confirmed (a multi-agent workflow paper, a review of action-item extraction and a general ASR/NLP overview); the action-item review was replaced with a peer-reviewed ACM conference paper on the same problem. Twelve of the fourteen sources are peer-reviewed journal articles or main-conference papers; one is an ICML workshop paper and one is a journal article from a smaller, non-indexed venue, and both are used only as supporting evidence. Twelve sources were published in 2021--2026. Two foundational works are retained deliberately: the Kanban mapping study~\cite{ahmad2018kanban} and wav2vec~2.0~\cite{baevski2020wav2vec}, because the board model and the self-supervised ASR models evaluated for Kazakh build on them.
 
 % =====================================================
 \section{Type 1 -- Broad Searches: AI and Task-Management Systems}
 
-\source{Lekkala and Bandari (2026): Autonomous Workflow Optimization Using Multi-Agent AI Systems}{lekkala2026autonomous}
+\source{Ahmad et al. (2018): Kanban in Software Engineering: A Systematic Mapping Study}{ahmad2018kanban}
 \begin{sourceinfo}
-  \item[Problem.] Fixed scheduling and manual coordination of work handoffs cannot easily adapt to fluctuating workloads.
-  \item[Method.] An autonomous multi-agent workflow approach using reinforcement learning, work-in-process (WIP) coordination and handoff coordination.
-  \item[Reported findings.] The abstract reports reduced cycle time and WIP and high workstation utilization; the conclusion provides results for both simulation and deployment. However, the reported WIP reduction differs between the abstract (27\%) and the conclusion (49\% in simulations), so these figures cannot be compared directly.
-  \item[Relevance.] Highlights the importance of workflow stages, handoffs and WIP in Kanban-like systems.
-  \item[Limitation for our project.] Focuses on manufacturing and service operations with multiple autonomous agents, whereas our project concerns automatic card creation from a short voice message. Multi-agent optimization is not needed for our MVP.
+  \item[Problem.] Kanban is widely adopted by software teams, but the evidence on its benefits and difficulties is scattered.
+  \item[Method.] A systematic mapping study of published research on Kanban in software engineering, classifying studies by topic, research type and reported outcomes.
+  \item[Reported findings.] The mapped studies associate Kanban with visualizing work, limiting work in progress and improving coordination, but also report adoption difficulties and a limited amount of rigorous empirical evidence.
+  \item[Relevance.] Grounds the board model of our system (columns, visible status, WIP) in established practice rather than in a single product, and supports keeping the board itself conventional while the novelty lies in task entry.
+  \item[Limitation for our project.] Foundational and published in 2018; it concerns software teams and does not address AI or voice input, so it motivates the board design but not the assistant.
 \end{sourceinfo}
 
 \source{Adebanjo et al. (2026): Design and Implementation of an AI-Powered Task Management System}{adebanjo2026taskwise}
@@ -81,7 +83,7 @@ The team used three kinds of queries:
   \item[Method.] TaskWise combines natural language processing, scheduling and reminders, a React/Tailwind front end, and Firebase/Firestore back-end services with synchronization.
   \item[Findings.] The paper reports usability improvements from task automation and natural language input.
   \item[Relevance.] A close analogue of our product; useful when discussing user-friendly task creation and quick feedback after natural language input.
-  \item[Limitations.] Dependence on online Firebase services; rule- and context-based AI rather than learning from history; no collaborative workspace; web version only; small student test group.
+  \item[Limitations.] Dependence on online Firebase services; rule- and context-based AI rather than learning from history; no collaborative workspace; web version only; small student test group. Published in a smaller, non-indexed journal, so it is used as a product analogue rather than as empirical evidence.
   \item[Our difference.] We focus specifically on the \emph{speech $\rightarrow$ transcription $\rightarrow$ task extraction $\rightarrow$ user confirmation $\rightarrow$ Kanban card} pipeline and evaluate each step separately.
 \end{sourceinfo}
 
@@ -106,6 +108,33 @@ The team used three kinds of queries:
   \item[Limitation.] A survey of existing models and experiments, not an implementation or benchmark for a Kanban setting; some methods are dated compared with modern LLMs.
 \end{sourceinfo}
 
+\source{Baevski et al. (2020): wav2vec 2.0: Self-Supervised Learning of Speech Representations}{baevski2020wav2vec}
+\begin{sourceinfo}
+  \item[Problem.] Accurate ASR normally requires large amounts of transcribed speech, which low-resource languages such as Kazakh lack.
+  \item[Method.] Self-supervised pre-training on unlabelled audio by masking latent speech representations and solving a contrastive task, followed by fine-tuning on a small labelled set.
+  \item[Reported findings.] With ten minutes of labelled data and pre-training on 53k hours of unlabelled audio, the model reaches 4.8/8.2 WER on the LibriSpeech clean/other test sets.
+  \item[Relevance.] Foundational work behind the wav2vec2 and XLS-R models evaluated for Kazakh~\cite{kozhirbayev2023kazakh}; explains why a Kazakh-specific fine-tuned model is a realistic candidate for our STT benchmark.
+  \item[Limitation.] Results are for read English speech; fine-tuning and evaluation on Kazakh and mixed speech are still required.
+\end{sourceinfo}
+
+\source{Radford et al. (2023): Robust Speech Recognition via Large-Scale Weak Supervision (Whisper)}{radford2023whisper}
+\begin{sourceinfo}
+  \item[Problem.] ASR models fine-tuned on one dataset often degrade on other recording conditions and domains.
+  \item[Method.] Whisper: an encoder--decoder Transformer trained on 680{,}000 hours of weakly supervised multilingual and multitask audio, including language identification and translation.
+  \item[Reported findings.] Without dataset-specific fine-tuning, the models are often competitive with fully supervised systems on standard benchmarks and approach human robustness.
+  \item[Relevance.] The base multilingual model for Russian and English and the automatic language-detection step in our STT routing (BE-03).
+  \item[Limitation.] Accuracy varies strongly by language and depends on the amount of training data per language; zero-shot performance on Kazakh and on code-switched Kazakh--Russian speech must be measured rather than assumed.
+\end{sourceinfo}
+
+\source{Mussakhojayeva, Khassanov and Varol (2022): KSC2: An Industrial-Scale Open-Source Kazakh Speech Corpus}{mussakhojayeva2022ksc2}
+\begin{sourceinfo}
+  \item[Problem.] Progress in Kazakh ASR is limited by the lack of large, openly available transcribed speech.
+  \item[Method.] KSC2: more than a thousand hours of manually transcribed Kazakh speech, about three times the size of the original KSC, validated with preliminary ASR experiments on several evaluation sets.
+  \item[Reported findings.] The corpus is released openly and supports training and evaluation of Kazakh ASR models.
+  \item[Relevance.] A source of training data and reference test sets for Kazakh models in our STT benchmark, alongside our own recorded commands.
+  \item[Limitation.] Mostly monolingual Kazakh; it does not represent short workplace commands or Kazakh--Russian code-switching typical of our users.
+\end{sourceinfo}
+
 \source{Kozhirbayev (2023): Kazakh Speech Recognition: Wav2vec2.0 vs.\ Whisper}{kozhirbayev2023kazakh}
 \begin{sourceinfo}
   \item[Problem.] Kazakh speech recognition is difficult because annotated data are limited.
@@ -124,13 +153,13 @@ The team used three kinds of queries:
   \item[Limitation.] Targets conversational dialogue, not card generation, and does not include Kazakh.
 \end{sourceinfo}
 
-\source{Tanaka and Thompson (2025): Multi-Agent Systems for Action Item Extraction from Meeting Transcripts}{tanaka2025multiagent}
+\source{Golia and Kalita (2023): Action-Item-Driven Summarization of Long Meeting Transcripts}{golia2023action}
 \begin{sourceinfo}
-  \item[Problem.] Meeting transcripts mix conversation, decisions and commitments to action.
-  \item[Approach.] A review of multi-agent systems and LLMs for extracting action items from meeting transcripts.
-  \item[Claim.] The authors discuss the benefits of decomposing the process into cooperating agents.
-  \item[Contribution.] Useful for framing task identification, e.g.\ separating an instruction from an off-hand remark and separating several action items in one message.
-  \item[Limitation.] A review rather than an empirical study; it should not be used as empirical evidence until its venue and publication metadata are verified.
+  \item[Problem.] Meeting transcripts mix conversation, decisions and commitments to action, and long transcripts exceed what a language model can track reliably.
+  \item[Method.] The transcript is split into topic-based sections; action items are extracted from each section, sections are summarized recursively and in parallel, and the results are merged into an action-item-driven summary. Three section-splitting methods are compared.
+  \item[Reported findings.] On the AMI meeting corpus the pipeline reaches a BERTScore of 64.98, about 4.98\% above a fine-tuned BART baseline.
+  \item[Relevance.] Supports extracting several separate action items from one input and processing long meeting input in sections, which corresponds to our multiple-task and meeting-summary requirements.
+  \item[Limitation.] English meeting transcripts and a summary-quality metric; it does not measure whether each extracted action item has the correct assignee and deadline, which our evaluation must check field by field.
 \end{sourceinfo}
 
 \source{Sun et al. (2024): Speech-based Slot Filling using Large Language Models}{sun2024speech}
@@ -163,15 +192,6 @@ The team used three kinds of queries:
   \item[Limitation.] Addresses task-oriented API argument filling, not Kanban services or our target languages.
 \end{sourceinfo}
 
-\source{Pal (2023): Natural Language Processing and Speech Recognition}{pal2023nlp}
-\begin{sourceinfo}
-  \item[Problem.] ASR and NLP capabilities need to be considered together in interactive systems.
-  \item[Approach.] A general introduction to and comparison of transformer models for ASR and NLP, including benchmarking and multilingual and noisy-speech considerations.
-  \item[Reported findings.] Outlines developments and trade-offs in speech and language technologies.
-  \item[Relevance.] General context for designing an ASR + NLP/LLM pipeline without assuming that a transcript alone constitutes a valid task.
-  \item[Limitation.] A broad overview with limited direct evidence for task formulation; publication quality and comparisons should be verified independently.
-\end{sourceinfo}
-
 \source{Hoang (2026): Structured Hallucination in Tool-Using Agents}{hoang2026structured}
 \begin{sourceinfo}
   \item[Problem.] An LLM can silently corrupt structured values even when its response is syntactically valid JSON or Markdown.
@@ -189,7 +209,7 @@ The team used three kinds of queries:
 \setlength{\tabcolsep}{4pt}
 \rowcolors{2}{gray!8}{white}
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.6cm} >{\raggedright\arraybackslash}p{1.5cm} >{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{3.0cm}}
-\caption{Comparison of the twelve reviewed sources.}\label{tab:comparison}\\
+\caption{Comparison of the fourteen reviewed sources.}\label{tab:comparison}\\
 \toprule
 \textbf{No.} & \textbf{Search type} & \textbf{Publication} & \textbf{Main approach} & \textbf{Value for our project} & \textbf{Applicability limit} \\
 \midrule
@@ -198,17 +218,19 @@ The team used three kinds of queries:
 \textbf{No.} & \textbf{Search type} & \textbf{Publication} & \textbf{Main approach} & \textbf{Value for our project} & \textbf{Applicability limit} \\
 \midrule
 \endhead
-\cite{lekkala2026autonomous} & Broad & Lekkala \& Bandari (2026) & Multi-agent workflow optimization & WIP and task-handoff concepts & Operations, not voice-to-task \\
-\cite{adebanjo2026taskwise} & Broad & Adebanjo et al. (2026) & NLP-enabled TaskWise platform & Comparable task-management product & Small evaluation; limited collaboration \\
+\cite{ahmad2018kanban} & Broad & Ahmad et al. (2018) & Systematic mapping of Kanban research & Board model, WIP and visible status & Foundational; no AI or voice \\
+\cite{adebanjo2026taskwise} & Broad & Adebanjo et al. (2026) & NLP-enabled TaskWise platform & Comparable task-management product & Small evaluation; smaller venue \\
 \cite{chen2021smart} & Broad & Chen et al. (2021) & NLP and contract keyword detection & Domain-focused information extraction & Construction documents \\
 \cite{weld2022survey} & Narrow & Weld et al. (2022) & Survey of intent and slot models & Intent and task-field design & Not a task-generation experiment \\
+\cite{baevski2020wav2vec} & Narrow & Baevski et al. (2020) & Self-supervised ASR pre-training & Basis of Kazakh wav2vec2/XLS-R models & Foundational; English read speech \\
+\cite{radford2023whisper} & Narrow & Radford et al. (2023) & Whisper, weakly supervised multilingual ASR & Base model and language detection & Per-language accuracy varies \\
+\cite{mussakhojayeva2022ksc2} & Narrow & Mussakhojayeva et al. (2022) & KSC2 Kazakh speech corpus & Kazakh training and test data & No code-switching or commands \\
 \cite{kozhirbayev2023kazakh} & Narrow & Kozhirbayev (2023) & Kazakh ASR model comparison & Candidate ASR models and WER/CER & Domain and recording conditions vary \\
 \cite{si2023spokenwoz} & Narrow & Si et al. (2023) & SpokenWOZ benchmark & Realistic speech evaluation cases & Different domains and languages \\
-\cite{tanaka2025multiagent} & Narrow & Tanaka \& Thompson (2025) & Action-item extraction review & Multiple tasks and indirect commitments & Review, not a Kanban implementation \\
+\cite{golia2023action} & Narrow & Golia \& Kalita (2023) & Action-item-driven meeting summarization & Several action items per input & English; summary metric, not fields \\
 \cite{sun2024speech} & Narrow & Sun et al. (2024) & LLM slot filling under noisy ASR & Robust extraction from transcripts & Different dataset and models \\
 \cite{li2024simple} & Narrow & Li et al. (2024) & Generate-and-Organize (G\&O) & Structured output strategy & Tested on NER/RE \\
 \cite{mok2024llm} & Adjacent & Mok et al. (2024) & Grounded API argument filling & Faithfulness to schema and user text & Not Kanban-specific \\
-\cite{pal2023nlp} & Adjacent & Pal (2023) & ASR/NLP technology overview & End-to-end speech and language context & Broad review; verify claims \\
 \cite{hoang2026structured} & Adjacent & Hoang (2026) & Structured hallucination benchmark & Field fidelity and validation risks & Travel-data synthesis, not STT \\
 \bottomrule
 \end{longtable}
@@ -225,7 +247,7 @@ Voice message $\rightarrow$ ASR transcription $\rightarrow$ task/intent extracti
 \end{center}
 
 \paragraph{Model selection is empirical.}
-The Kazakh ASR comparison~\cite{kozhirbayev2023kazakh} motivates testing at least Whisper and, if feasible, a suitable wav2vec2 variant as a baseline. Universal claims of model superiority should not be made on the basis of a single dataset.
+Whisper~\cite{radford2023whisper} provides a robust multilingual baseline with language detection, while self-supervised models~\cite{baevski2020wav2vec} fine-tuned on Kazakh data such as KSC2~\cite{mussakhojayeva2022ksc2} are the main alternative for Kazakh. The Kazakh ASR comparison~\cite{kozhirbayev2023kazakh} motivates testing both families on our own recordings. Universal claims of model superiority should not be made on the basis of a single dataset, and none of these sources covers Kazakh--Russian code-switching.
 
 \paragraph{Task extraction must be evaluated independently of transcription.}
 The intent detection, slot filling and spoken-dialogue papers~\cite{weld2022survey,si2023spokenwoz,sun2024speech} show that even a good transcript can lead to wrongly extracted entities or actions. Both stages need to be assessed.
@@ -234,7 +256,7 @@ The intent detection, slot filling and spoken-dialogue papers~\cite{weld2022surv
 The structured extraction, API argument filling and hallucination papers~\cite{li2024simple,mok2024llm,hoang2026structured} imply two complementary checks: (a)~\emph{schema validity} (types, required fields, valid statuses) and (b)~\emph{semantic correctness} with respect to the transcript. Schema validation must be performed explicitly before data are stored.
 
 \paragraph{The MVP should stay small.}
-Multi-agent workflow optimization~\cite{lekkala2026autonomous} is an interesting problem but is not required to demonstrate that voice-to-task creation works. A basic backend for ASR, task extraction and validation is easier to justify and test.
+The Kanban literature~\cite{ahmad2018kanban} supports keeping the board itself conventional, and comparable task-management products~\cite{adebanjo2026taskwise} show that the difficult part is reliable task entry rather than the board. A basic backend for ASR, task extraction and validation is easier to justify and test than autonomous multi-agent workflow optimization, which is outside the MVP.
 
 % =====================================================
 \section{Proposed Evaluation Plan}
@@ -262,7 +284,7 @@ Evaluation should use a small labelled set of representative voice messages: sin
 % =====================================================
 \section{Conclusion}
 
-The twelve reviewed publications cover complementary parts of the intelligent Kanban problem. Task-management studies establish the relevance of the product; Kazakh ASR and spoken-dialogue studies highlight language and audio challenges; intent detection, slot filling and structured extraction studies inform the AI pipeline; and API-grounding and hallucination studies identify reliability risks. Together they \emph{motivate}, but do not directly validate, the planned voice-to-Kanban workflow. The next step is to select candidate tools, build a baseline implementation and measure its performance on representative user utterances before finalizing the technology stack.
+The fourteen reviewed publications cover complementary parts of the intelligent Kanban problem. Kanban and task-management studies establish the relevance of the product; ASR, Kazakh speech and spoken-dialogue studies highlight language and audio challenges; intent detection, slot filling and structured extraction studies inform the AI pipeline; and API-grounding and hallucination studies identify reliability risks. Together they \emph{motivate}, but do not directly validate, the planned voice-to-Kanban workflow. The next step is to select candidate tools, build a baseline implementation and measure its performance on representative user utterances before finalizing the technology stack.
 
 % =====================================================
 \bibliographystyle{unsrtnat}
