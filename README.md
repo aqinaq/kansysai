@@ -72,4 +72,17 @@ The prototype uses sample commands and sample board data. It must not be present
 
 Work is tracked in [YouTrack](https://ai-kanban-thesis.youtrack.cloud/projects/DEMO). Changes are developed in task branches and submitted through GitHub pull requests for teammate review. New branches, commits, and pull requests should reference their YouTrack issue ID. Each completed issue should link to its reviewed deliverable.
 
+## Run the speech-to-text benchmark tests
+
+The [`benchmarks/`](benchmarks/) folder contains the speech-to-text benchmark used for the technology selection ([BE-03](docs/be-03/BE03.pdf)) and its unit tests. The unit tests use stub models to check the language-routing policy and the auto/hint evaluation modes; they do not need audio files, model weights or a GPU.
+
+```bash
+pip install -r benchmarks/requirements.txt
+pytest benchmarks
+```
+
+The requirements install PyTorch and Whisper models, so the first installation can take several minutes. A Python virtual environment is recommended.
+
+The benchmark itself (`python benchmarks/stt_benchmark.py`) needs recordings and reference transcripts in `benchmarks/data/<kk|ru|en|mixed>/`. These folders are currently empty, so **no benchmark results exist yet**.
+
 Setup and test instructions for the persistent application will be added when that implementation is available.
