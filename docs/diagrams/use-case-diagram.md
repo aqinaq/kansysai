@@ -1,43 +1,33 @@
 # FE-05: Use Case Overview
 
-Status: Draft for team review.
+Status: Draft for team review; UML diagram prepared for pre-defense.
 
 This diagram describes planned user interactions. It does not represent completed implementation.
 
-## Actor
+## Actors
 
-An authenticated workspace member, such as an employee, project manager, teacher, or student. Available actions depend on workspace and project permissions.
+- **Workspace member:** an authenticated employee, project manager, teacher, or student. Available actions depend on workspace and project permissions.
+- **External speech-to-text (STT) service:** supports audio transcription outside the application boundary.
+- **External language-model (LLM) service:** supports interpretation and field extraction outside the application boundary.
+- **External email service:** supports planned notifications when they are enabled. Notifications are later-scope work.
+
+The AI assistant and its review and confirmation logic are inside the system boundary. The external services are supporting actors, not users of the product.
 
 ## System boundary and use cases
 
-```mermaid
-flowchart LR
-    member["Workspace member"]
+![UML use-case diagram with workspace member and external STT, LLM, and email actors](use-case-diagram.png)
 
-    subgraph system["Intelligent Kanban System"]
-        selectProject(["Select workspace and project"])
-        manageBoard(["View and manage Kanban board"])
-        editTask(["Create and edit tasks manually"])
-        submitCommand(["Submit voice or text command"])
-        review(["Review and edit proposed changes"])
-        clarify(["Clarify missing or ambiguous details"])
-        confirm(["Confirm or cancel proposed changes"])
-        search(["Search tasks"])
-        summary(["View project summary"])
-    end
+The [PNG diagram](use-case-diagram.png) is generated from the editable [Python source](render_use_case.py). It shows planned interactions, not completed implementation. Solid lines associate actors with use cases; dashed UML dependencies describe required or conditional behavior:
 
-    member --- selectProject
-    member --- manageBoard
-    member --- editTask
-    member --- submitCommand
-    member --- review
-    member --- clarify
-    member --- confirm
-    member --- search
-    member --- summary
-```
+| Relationship | Meaning |
+| --- | --- |
+| Submit voice command `<<include>>` Transcribe audio and Interpret command | Audio must be transcribed and interpreted before proposals can be shown. |
+| Submit text command `<<include>>` Interpret command | Text enters the same interpretation flow after transcription is skipped. |
+| Confirm selected changes `<<include>>` Validate and save authorized change | Confirmation always reaches backend validation before any data change. |
+| Clarify missing or ambiguous details `<<extend>>` Review and edit proposals | Clarification appears only when the proposal is incomplete or ambiguous. |
+| Send notification `<<extend>>` Validate and save authorized change | Notification is conditional and belongs to later product scope. |
 
-This is a use-case overview expressed with Mermaid. Connections show user interactions, not processing order.
+The diagram groups manual board operations into one use case. The AI action table below gives the eight action-level details; the first MVP plans CreateTask only.
 
 ## AI action coverage
 

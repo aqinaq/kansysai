@@ -1,13 +1,14 @@
 # FE-07: Prototype Evaluation
 
 **YouTrack:** [DEMO-30](https://ai-kanban-thesis.youtrack.cloud/issue/DEMO-30)  
-**Evaluation date:** 22 October 2026  
+**Evaluation period:** 21–22 October 2026
+
 **Artifact evaluated:** FE-04 interactive browser prototype (`prototype/index.html`)  
-**Status:** Three independent participant sessions documented; teammate review pending.
+**Status:** Internal walkthrough and three independent participant sessions documented; [evaluation PR #23](https://github.com/aqinaq/kansysai/pull/23) merged on 22 October 2026.
 
-## Purpose and method
+## Internal walkthrough: purpose and method
 
-This walkthrough checked whether the prototype supports the main task flows: selecting a project, editing a Kanban card, reviewing several AI-proposed tasks, and resolving an ambiguous task or assignee. One evaluator used the browser prototype and recorded the visible results after each action. The evaluation did not measure how easily independent users understand the interface.
+The internal walkthrough checked whether the prototype supports the main task flows: selecting a project, editing a Kanban card, reviewing several AI-proposed tasks, and resolving an ambiguous task or assignee. One evaluator used the browser prototype and recorded the visible results after each action. This walkthrough did not measure how easily independent users understand the interface; their sessions are documented separately below.
 
 The prototype contains illustrative project and task data. Voice recording and AI generation are simulated. Browser state resets when the page reloads.
 
@@ -58,9 +59,9 @@ A second internal check on 22 October started from a fresh board with six tasks.
 
 The earlier role-based simulated walkthroughs are useful prompts for what to observe, but their student, team-lead, and coordinator personas do not count as three participants. The current demo label addresses part of the concern that people might mistake preset responses for live AI; whether actual users notice it remains untested.
 
-## Independent participant feedback (21–22 October 2026)
+## Independent prototype tester feedback (21–22 October 2026)
 
-Akbope confirmed that P1, P2, and P3 were three different people outside the diploma team. Each tried the prototype individually and attempted all five tasks. P1 tested on 21 October 2026; P2 and P3 tested on 22 October 2026. Before testing, all three were told that voice input and AI responses were simulated.
+Akbope confirmed that T1, T2, and T3 were three different people outside the diploma team. Each tried the prototype individually and attempted all five tasks. T1 tested on 21 October 2026; T2 and T3 tested on 22 October 2026. Before testing, all three were told that voice input and AI responses were simulated.
 
 Each participant was asked to: (1) find the core screens task on the board; (2) edit its deadline; (3) use the “Several tasks” example and select which proposals to add; (4) resolve the ambiguous diagram task; and (5) resolve an unknown assignee and finish creating the proposed task. “Without help” means the participant completed the task without a facilitator prompt. These were prototype flows with preset assistant responses, not tests of live transcription or AI extraction.
 
@@ -68,37 +69,37 @@ Each participant was asked to: (1) find the core screens task on the board; (2) 
 
 | Participant | Tasks completed without help | Hesitation or assistance observed |
 | --- | --- | --- |
-| P1 | 1, 2, 3, and 5 — 4 of 5 | At task 4, two diagram tasks matched. P1 needed a prompt to read both choices before selecting one. |
-| P2 | 1, 2, 3, 4, and 5 — 5 of 5 | At task 3, P2 paused to check whether deselecting a proposal would keep it off the board. No help was given. |
-| P3 | 1, 2, and 4 — 3 of 5 | At task 3, P3 needed help finding the selection checkbox. At task 5, P3 chose Unassigned, closed the preview without confirming, and the task was not created. |
+| T1 | 1, 2, 3, and 5 — 4 of 5 | At task 4, two diagram tasks matched. T1 needed a prompt to read both choices before selecting one. |
+| T2 | 1, 2, 3, 4, and 5 — 5 of 5 | At task 3, T2 paused to check whether deselecting a proposal would keep it off the board. No help was given. |
+| T3 | 1, 2, and 4 — 3 of 5 | At task 3, T3 needed help finding the selection checkbox. At task 5, T3 chose Unassigned, closed the preview without confirming, and the task was not created. |
 
-**P1 — board and clarification.** P1 found the core screens task, changed its deadline, saved, and checked that the new date appeared on the board. As a first-time Kanban user, P1 said the To do, In progress, and Done columns made task progress understandable. P1 expected to drag a card between columns for a quick status update and found editing its status inside the card slow. When two diagram tasks matched the assistant command, P1 was unsure which to choose until prompted to compare them.
+**T1 — board and clarification.** T1 found the core screens task, changed its deadline, saved, and checked that the new date appeared on the board. As a first-time Kanban user, T1 said the To do, In progress, and Done columns made task progress understandable. T1 expected to drag a card between columns for a quick status update and found editing its status inside the card slow. When two diagram tasks matched the assistant command, T1 was unsure which to choose until prompted to compare them.
 
-**P2 — reviewing proposals.** P2 found and edited the core screens task without help. In the “Several tasks” flow, P2 checked the assignee and deadline on both proposals, deselected the second, and paused to verify what deselection would do. After confirming, only the selected task appeared on the board. P2 also completed the diagram and unknown-assignee tasks without help. P2 said a short description on each proposal would make the confirmation decision easier.
+**T2 — reviewing proposals.** T2 found and edited the core screens task without help. In the “Several tasks” flow, T2 checked the assignee and deadline on both proposals, deselected the second, and paused to verify what deselection would do. After confirming, only the selected task appeared on the board. T2 also completed the diagram and unknown-assignee tasks without help. T2 said a short description on each proposal would make the confirmation decision easier.
 
-**P3 — selection and final confirmation.** P3 found and edited the core screens task. In the multiple-task preview, P3 did not notice the selection checkbox and needed it pointed out. P3 resolved the diagram clarification without help. In the unknown-assignee flow, P3 chose Unassigned and returned to the preview, then closed it believing the action was finished. The task was absent from the board. P3 asked for a more noticeable final Confirm step and an explanation that choosing an assignee only updates the preview.
+**T3 — selection and final confirmation.** T3 found and edited the core screens task. In the multiple-task preview, T3 did not notice the selection checkbox and needed it pointed out. T3 resolved the diagram clarification without help. In the unknown-assignee flow, T3 chose Unassigned and returned to the preview, then closed it believing the action was finished. The task was absent from the board. T3 asked for a more noticeable final Confirm step and an explanation that choosing an assignee only updates the preview.
 
 ### Interpretation and proposed changes
 
 The following are product interpretations of the observations above; the participant actions and comments are recorded separately above.
 
-- **F4 — Direct board status change (P1).** Provide drag-and-drop between To do, In progress, and Done for quick updates. Check that the card moves to the destination column and its status changes. Keep the task-details status control for deliberate edits and keyboard access.
-- **F5 — Proposal description (P2).** Show a short description for each proposed task before confirmation, so users can judge what will be created. Confirm that descriptions of unselected proposals are not saved.
-- **F6 — Disambiguation context (P1).** Show available identifying details alongside similar task names during clarification, such as project or board section, current status, and deadline. Do not imply separate project data where the shared-board demo has none.
-- **F7 — Proposal selection visibility (P3).** Make the selection control and its effect clear in each proposal. Check that users can find it without a prompt and understand that unselected tasks will not be added.
-- **F8 — Final confirmation clarity (P3).** Make Confirm prominent after assignee selection, and state that the choice only updates the proposal until confirmation. Check that a user who chooses Unassigned understands that the task has not yet been created and can complete the flow.
+- **F4 — Direct board status change (T1).** Provide drag-and-drop between To do, In progress, and Done for quick updates. Check that the card moves to the destination column and its status changes. Keep the task-details status control for deliberate edits and keyboard access.
+- **F5 — Proposal description (T2).** Show a short description for each proposed task before confirmation, so users can judge what will be created. Confirm that descriptions of unselected proposals are not saved.
+- **F6 — Disambiguation context (T1).** Show available identifying details alongside similar task names during clarification, such as project or board section, current status, and deadline. Do not imply separate project data where the shared-board demo has none.
+- **F7 — Proposal selection visibility (T3).** Make the selection control and its effect clear in each proposal. Check that users can find it without a prompt and understand that unselected tasks will not be added.
+- **F8 — Final confirmation clarity (T3).** Make Confirm prominent after assignee selection, and state that the choice only updates the proposal until confirmation. Check that a user who chooses Unassigned understands that the task has not yet been created and can complete the flow.
 
 ### Priority and follow-up
 
 | Priority | Finding | Reason |
 | --- | --- | --- |
-| 1 | F8 — final confirmation clarity | P3 left task 5 unfinished and the task was not created. |
+| 1 | F8 — final confirmation clarity | T3 left task 5 unfinished and the task was not created. |
 | 2 | F1 — preserve edits during clarification | The internal walkthrough found that a typed change can be silently lost. |
-| 3 | F7 — proposal selection visibility | P3 needed help finding a required control in task 3. |
-| 4 | F6 — disambiguation context | P1 needed a prompt in task 4 to compare similar choices. |
-| 5 | F5 — proposal description | P2 completed the flow but wanted more information before confirming. |
-| 6 | F4 — drag-and-drop status updates | P1 requested a faster routine status change; the current card editor worked. |
+| 3 | F7 — proposal selection visibility | T3 needed help finding a required control in task 3. |
+| 4 | F6 — disambiguation context | T1 needed a prompt in task 4 to compare similar choices. |
+| 5 | F5 — proposal description | T2 completed the flow but wanted more information before confirming. |
+| 6 | F4 — drag-and-drop status updates | T1 requested a faster routine status change; the current card editor worked. |
 | 7 | F2 — future-relative sample deadline | The fixed sample date will become stale after 23 October. |
 | 8 | F3 — shared-board explanation | Clarify the prototype shortcut until project-specific boards exist. |
 
-No prototype UI change is included in this evaluation report. The five tasks, outcomes, and improvement priorities provide input for follow-up frontend issues. The three-participant minimum has been met. Teammate review and PR merge remain before closing DEMO-30.
+No prototype UI change is included in this evaluation report. The five tasks, outcomes, and improvement priorities provide input for follow-up frontend issues. The three-tester minimum has been met, and the evaluation PR has been merged. YouTrack issue DEMO-30 should reflect that completed evidence.

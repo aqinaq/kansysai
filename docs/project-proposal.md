@@ -37,22 +37,29 @@ Develop a Kanban system that turns voice or text instructions into editable task
 7. The board displays the saved tasks.
 
 ## First working version
-- A usable Kanban board with manual task creation, editing, and movement.
+- Registration and login, workspaces and projects, and backend checks that restrict access to authorized project data.
+- A persistent Kanban board with manual task creation, editing, and movement.
 - Voice input, transcription, and correction of recognized text.
 - Creation of one or more task suggestions from a voice or text message.
 - Separate review, editing, confirmation, or rejection of each suggestion.
 - Clarification or an unassigned state when the responsible person is unknown.
 - Backend validation before confirmed tasks are saved.
+- Protection against duplicate actions on retry and an audit record of task changes.
 
 ## Planned product scope after the first working version
-- User accounts, workspaces, project members, and access permissions.
+- Member-management controls beyond the valid-member and permission checks required for the first working version.
 - Voice and text commands to update existing tasks, status, assignee, deadline, and priority.
 - Task search and project summaries based on real project data.
-- Comments, change history, notifications, and meeting summaries.
+- Comments, a user-facing change-history view, notifications, and meeting summaries.
 - Evaluation of Kazakh, Russian, English, and mixed-language commands.
 
 ## Safety rule
 The assistant must not save or change project data when the command is ambiguous or the user has not confirmed the proposed action.
 
+## Expected outcomes
+- **First working MVP:** an authenticated, persistent project board where users can manage tasks manually, correct voice transcripts, and review one or more task suggestions from voice or text before confirmed actions are saved. The MVP assistant action is Create Task; the other seven specified actions remain in the complete-product scope.
+- **Measured product outcome:** compare manual task entry with the assistant workflow on equivalent assignments, and record task completion, transcription quality, field extraction, response time, permissions, and confirmation safety. Numerical AI and performance targets must be agreed before final results are judged. These implementation measurements have not been run yet.
+- **Documentation and evaluation evidence:** product requirements, user research, architecture and API designs, an interactive prototype, and a verification plan with 36 planned cases. Three independent participants completed 4/5, 5/5, and 3/5 prototype tasks without help; this is usability evidence for a simulated interface, not a measure of live speech or AI quality.
+
 ## Evidence and next evaluation
-The initial user evidence is documented in `docs/research/user-interviews.md`. The interactive prototype and its limitations are documented in `prototype/README.md`. The next evaluation will test the prototype with potential users and record task completion, confusion, and proposed improvements.
+The initial user evidence is documented in `docs/research/user-interviews.md`. The interactive prototype and its limitations are documented in `prototype/README.md`. Three independent participant sessions and the internal walkthrough are documented in `docs/research/prototype-feedback.md`. The next evaluation will execute applicable cases from `docs/verification-evaluation-plan.md` against a working implementation and record actual results.

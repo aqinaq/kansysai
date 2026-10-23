@@ -17,7 +17,7 @@ The AI assistant interprets commands and proposes actions. Users can inspect and
 - Teachers assigning and monitoring work
 - Students organizing individual and group projects
 
-These are intended user groups. Three initial user interviews informed the review and clarification flows; further prototype testing is planned. The interviews do not represent all potential users.
+These are intended user groups. Three initial user interviews informed the review and clarification flows, and three independent participants subsequently tested the simulated prototype. Neither small group represents all potential users.
 
 ## 3. Team
 
